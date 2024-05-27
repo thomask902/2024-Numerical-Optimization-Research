@@ -87,6 +87,7 @@ class GAM(torch.optim.Optimizer):
                     p.add_(e_w)
                     self.state[p]['e_w_1_2'] += e_w
 
+        # raise error if neither set of gradients declared
         else:
             raise ValueError('"perturb_idx" should be one of [0, 1].')
 
