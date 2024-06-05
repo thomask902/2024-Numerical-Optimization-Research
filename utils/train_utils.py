@@ -38,8 +38,8 @@ def train_epoch_smooth(model, trainloader, optimizer, device):
         optimizer.step()  # Optimize the model parameters
         
         running_loss += loss.item()
-        if (i + 1) % 100 == 0:  # Print every 100 mini-batches
-            print(f'Batch {i + 1}, Loss: {running_loss / 100:.3f}')
+        if (i + 1) % 2000 == 1999:  # Print every 2000 mini-batches
+            print(f'Batch {i + 1}, Loss: {running_loss / 2000:.3f}')
             running_loss = 0.0
 
 def evaluate_model(model, testloader, device):
