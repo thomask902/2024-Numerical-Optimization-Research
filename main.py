@@ -1,6 +1,6 @@
 import torch
 import torch.optim as optim
-from gam import GAM
+from utils.gam import GAM
 from models.resnet import resnet18_c
 from utils.gam_schedulers import ProportionScheduler
 from utils.data_loader import get_dataloaders
