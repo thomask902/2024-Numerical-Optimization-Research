@@ -1,3 +1,4 @@
 nano .gitignore
 /cifar10
 cifar-10-python.tar.gz
+/cifar-10-batches-py
