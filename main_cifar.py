@@ -4,6 +4,7 @@ import random
 import warnings
 import models
 import numpy as np
+import time
 
 import torch
 import torch.nn as nn
@@ -284,8 +285,11 @@ def main_worker(gpu, ngpus_per_node, args):
     optimizer, base_optimizer, lr_scheduler, grad_rho_scheduler, grad_norm_rho_scheduler = get_optim_and_schedulers(
         model, args)
 
+    start_time = time.time()
     # pass returned optimizers and schedulers into training loop
     for epoch in range(args.epochs):
+
+        start_epoch = time.time()
 
         if args.distributed:
             train_sampler.set_epoch(epoch)
@@ -294,13 +298,21 @@ def main_worker(gpu, ngpus_per_node, args):
 
         lr_scheduler.step()
 
+        print(f"Epoch {epoch} Accuracy:")
         evaluate_model(model, val_loader, gpu)
+
+        end_epoch = time.time()
+        elapsed_epoch = end_epoch - start_epoch
+        print(f"Epoch {epoch} time: {elapsed_epoch} seconds")
 
         # acc1 = validate(gpu, val_loader, model, criterion, True, args)
         # return_acc = max(return_acc, acc1)
         # tensor_writer.add_scalar('return_ACC@1/test', return_acc, epoch)
 
     # print('Test top-1 acc: ', return_acc)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Total training time: {elapsed_time} seconds")
 
 
 if __name__ == '__main__':

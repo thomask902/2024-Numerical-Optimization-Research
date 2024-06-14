@@ -33,8 +33,8 @@ def train_epoch_gam(model, trainloader, optimizer, gpu):
         optimizer.zero_grad()
         
         running_loss += loss.item()
-        if (i + 1) % 100 == 0:  # Print every 100 mini-batches
-            print(f'Batch {i + 1}, Loss: {running_loss / 100:.3f}')
+        if (i + 1) % 10 == 0:  # Print every 100 mini-batches
+            print(f'Batch {i + 1}, Loss: {running_loss / 10:.3f}')
             running_loss = 0.0
 
     # error catching if no loss value
