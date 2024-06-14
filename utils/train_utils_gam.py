@@ -51,8 +51,8 @@ def evaluate_model(model, testloader, gpu):
                 device = torch.device('cpu')
                 images, target = data[0].to(device), data[1].to(device)
             else:
-                images = images.cuda(gpu, non_blocking=True)
-                target = target.cuda(gpu, non_blocing=True)
+                images = data[0].cuda(gpu, non_blocking=True)
+                target = data[1].cuda(gpu, non_blocking=True)
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             total += target.size(0)
