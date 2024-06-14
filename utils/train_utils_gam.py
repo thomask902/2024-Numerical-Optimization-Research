@@ -16,8 +16,8 @@ def train_epoch_gam(model, trainloader, optimizer, gpu):
             device = torch.device('cpu')
             images, target = data[0].to(device), data[1].to(device)
         else:
-            images = images.cuda(gpu, non_blocking=True)
-            target = target.cuda(gpu, non_blocking=True)
+            images = data[0].cuda(gpu, non_blocking=True)
+            target = data[1].cuda(gpu, non_blocking=True)
         
         # calls set_closure from optimizer to go through GAM steps within that and return predictions and loss
         optimizer.set_closure(loss_fn, images, target)
