@@ -58,4 +58,4 @@ def evaluate_model(model, testloader, gpu):
             total += target.size(0)
             correct += (predicted == target).sum().item()
     
-    print(f'Accuracy: {100 * correct / total}%')
+    return 100 * correct / total

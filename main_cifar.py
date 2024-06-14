@@ -298,16 +298,17 @@ def main_worker(gpu, ngpus_per_node, args):
 
         lr_scheduler.step()
 
-        print(f"Epoch {epoch} Accuracy:")
-        evaluate_model(model, val_loader, gpu)
+        print(f"Epoch {epoch + 1}:")
+        accuracy = evaluate_model(model, val_loader, gpu)
 
         end_epoch = time.time()
         elapsed_epoch = end_epoch - start_epoch
-        print(f"Epoch {epoch} time: {elapsed_epoch} seconds")
+        print(f"Epoch {epoch + 1} time: {elapsed_epoch} seconds")
 
         # acc1 = validate(gpu, val_loader, model, criterion, True, args)
         # return_acc = max(return_acc, acc1)
-        # tensor_writer.add_scalar('return_ACC@1/test', return_acc, epoch)
+        print(f"Epoch {epoch + 1} accuracy: {accuracy}%")
+        tensor_writer.add_scalar('return_ACC@1/test', accuracy, epoch)
 
     # print('Test top-1 acc: ', return_acc)
     end_time = time.time()
