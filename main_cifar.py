@@ -53,7 +53,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
 parser.add_argument('--epochs_decay', default=[30, 60], type=int,
                     help='seed for initializing training. ')
 
-parser.add_argument('-p', '--print-freq', default=100, type=int,
+parser.add_argument('-p', '--print-freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--pretrained', dest='pretrained', action='store_true',
                     help='use pre-trained model')
@@ -294,7 +294,7 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.distributed:
             train_sampler.set_epoch(epoch)
 
-        train_epoch_gam(model, train_loader, optimizer, gpu)
+        train_epoch_gam(model, train_loader, optimizer, gpu, args.print_freq)
 
         lr_scheduler.step()
         current_lr = lr_scheduler.get_last_lr()[0]
