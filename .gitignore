@@ -5,3 +5,4 @@ cifar-10-python.tar.gz
 cifar-100-python.tar.gz
 models/__pycache__
 utils/__pycache__
+cifar-100-python

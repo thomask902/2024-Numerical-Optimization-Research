@@ -38,7 +38,7 @@ parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=200, type=int, metavar='N',
                     help='number of total epochs to run')
-parser.add_argument('-b', '--batch-size', default=128, type=int,
+parser.add_argument('-b', '--batch-size', default=256, type=int,
                     metavar='N',
                     help='mini-batch size (default: 256), this is the total '
                          'batch size of all GPUs on the current node when '
@@ -78,9 +78,9 @@ parser.add_argument('--benchmark', default=True, type=bool,
                     help='GPU id to use.')
 
 # data
-parser.add_argument('--cifar10_path', metavar='DIR_C', default='./cifar10',
+parser.add_argument('--cifar10_path', metavar='DIR_C', default='.',
                     help='path to dataset')
-parser.add_argument('--cifar100_path', metavar='DIR_C', default='./data/cifar100',
+parser.add_argument('--cifar100_path', metavar='DIR_C', default='.',
                     help='path to dataset')
 parser.add_argument('--dataset', default='CIFAR10', type=str)
 
@@ -297,8 +297,10 @@ def main_worker(gpu, ngpus_per_node, args):
         train_epoch_gam(model, train_loader, optimizer, gpu)
 
         lr_scheduler.step()
+        current_lr = lr_scheduler.get_last_lr()[0]
+        print(f"Epoch {epoch + 1} learning rate: {current_lr}")
+        tensor_writer.add_scalar('Learning Rate', current_lr, epoch)
 
-        print(f"Epoch {epoch + 1}:")
         accuracy = evaluate_model(model, val_loader, gpu)
 
         end_epoch = time.time()
