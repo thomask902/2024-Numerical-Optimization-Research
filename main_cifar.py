@@ -19,7 +19,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.tensorboard import SummaryWriter
 
-from utils.train_utils_gam import train_epoch_gam, evaluate_model
+from utils.train_utils_gam import train_epoch_gam, evaluate_model, train_epoch_base
 from utils.optimizer_helper import get_optim_and_schedulers
 
 model_names = sorted(name for name in models.__dict__
@@ -90,6 +90,8 @@ parser.add_argument('--log_base',
 
 # opt
 parser.add_argument("--base_opt", default='SGD', type=str, help="")
+parser.add_argument("--no_gam", default=0, type=int, 
+                    help="set to 1 to train only on base optimizer")
 
 parser.add_argument("--grad_beta_0", default=1., type=float, help="scale for g0")
 parser.add_argument("--grad_beta_1", default=1., type=float, help="scale for g1")
@@ -285,6 +287,10 @@ def main_worker(gpu, ngpus_per_node, args):
     optimizer, base_optimizer, lr_scheduler, grad_rho_scheduler, grad_norm_rho_scheduler = get_optim_and_schedulers(
         model, args)
 
+    # check if training only with base optimizer and overwrite the GAM optimizer
+    if args.no_gam == 1:
+        optimizer = base_optimizer
+
     start_time = time.time()
     # pass returned optimizers and schedulers into training loop
     for epoch in range(args.epochs):
@@ -293,8 +299,10 @@ def main_worker(gpu, ngpus_per_node, args):
 
         if args.distributed:
             train_sampler.set_epoch(epoch)
-
-        train_epoch_gam(model, train_loader, optimizer, gpu, args.print_freq)
+        if args.no_gam == 1:
+            train_epoch_base(model, train_loader, optimizer, gpu, args.print_freq)
+        else:
+            train_epoch_gam(model, train_loader, optimizer, gpu, args.print_freq)
 
         lr_scheduler.step()
         current_lr = lr_scheduler.get_last_lr()[0]

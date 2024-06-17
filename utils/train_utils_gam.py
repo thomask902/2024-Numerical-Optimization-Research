@@ -41,6 +41,32 @@ def train_epoch_gam(model, trainloader, optimizer, gpu, print_freq):
     if torch.isnan(loss).any():
         raise SystemExit('NaN！')
 
+def train_epoch_base(model, trainloader, optimizer, gpu, print_freq):
+    
+    def loss_fn(predictions, targets):
+        return smooth_crossentropy(predictions, targets).mean()
+    
+    model.train()
+    running_loss = 0.0
+    for i, data in enumerate(trainloader, 0):
+        if gpu == -1:
+            device = torch.device('cpu')
+            images, target = data[0].to(device), data[1].to(device)
+        else:
+            images = data[0].cuda(gpu, non_blocking=True)
+            target = data[1].cuda(gpu, non_blocking=True)
+        
+        optimizer.zero_grad()  # Zero the parameter gradients
+        outputs = model(images)  # Forward pass
+        loss = loss_fn(outputs, target)  # Compute loss
+        loss.backward()  # Backward pass
+        optimizer.step()  # Optimize the model parameters
+        
+        running_loss += loss.item()
+        if (i + 1) % print_freq == 0:
+            print(f'Batch {i + 1}, Loss: {running_loss / print_freq:.4f}')
+            running_loss = 0.0
+
 def evaluate_model(model, testloader, gpu):
     model.eval()
     correct = 0
