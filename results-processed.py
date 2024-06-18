@@ -50,9 +50,36 @@ for file in os.listdir(folder_path):
             'Model Architecture': model,
             'Dataset': dataset,
             'Data Augmentation': augmentation,
-            'Total Time (s)': total_time,
-            'Final Accuracy (%)': final_accuracy
+            'Final Accuracy (%)': final_accuracy,
+            'Total Time (s)': total_time
         }, ignore_index=True)
 
-# Display the DataFrame
+
+results_df['Total Time (min)'] = results_df['Total Time (s)'] / 60
+
 print(results_df)
+
+grouped_df = results_df.groupby(['Optimizer', 'Model Architecture', 'Dataset', 'Data Augmentation']).agg({
+    'Final Accuracy (%)': ['mean', 'std'],
+    'Total Time (s)': ['mean', 'std'],
+    'Total Time (min)': ['mean', 'std']
+}).reset_index()
+
+# Rename the columns for clarity
+grouped_df.columns = [
+    'Optimizer', 
+    'Model Architecture', 
+    'Dataset', 
+    'Data Augmentation', 
+    'Final Accuracy Mean (%)', 
+    'Final Accuracy Std (%)',
+    'Total Time Mean (s)', 
+    'Total Time Std (s)', 
+    'Total Time Mean (min)', 
+    'Total Time Std (min)', 
+]
+
+# Display the DataFrame
+print(grouped_df)
+
+print(grouped_df.loc[grouped_df["Optimizer"] == "sgd"])
