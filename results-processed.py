@@ -76,10 +76,10 @@ grouped_df.columns = [
     'Total Time Mean (s)', 
     'Total Time Std (s)', 
     'Total Time Mean (min)', 
-    'Total Time Std (min)', 
+    'Total Time Std (min)' 
 ]
 
 # Display the DataFrame
 print(grouped_df)
 
-print(grouped_df.loc[grouped_df["Optimizer"] == "sgd"])
+#print(grouped_df.loc[grouped_df["Optimizer"] == "gamsgd"])
