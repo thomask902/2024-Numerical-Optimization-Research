@@ -132,7 +132,7 @@ def main():
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.04, 0.3, 0.5, 0.05
     elif args.dataset == 'CIFAR10':
         if args.arch.startswith('resnet'):
-            args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.04, 0.03, 0.1, 0.1, 0.05
+            args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.03, 0.1, 0.1, 0.05
         elif args.arch.startswith('pyramidnet'):
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.03, 0.1, 0.1, 0.03
 
