@@ -23,6 +23,7 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.train_utils_gam import train_epoch_gam, evaluate_model, train_epoch_base
 from utils.optimizer_helper import get_optim_and_schedulers
 from utils.cutout import Cutout
+from utils.auto_augment import CIFAR10Policy
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
@@ -86,6 +87,8 @@ parser.add_argument('--cifar100_path', metavar='DIR_C', default='.',
                     help='path to dataset')
 parser.add_argument('--dataset', default='CIFAR10', type=str)
 parser.add_argument('--cutout', default= False, type=bool)
+parser.add_argument('--auto-augment', default=False, type=bool)
+parser.add_argument('--rand-augment', default=False, type=bool)
 parser.add_argument('--log_base',
                     default='./results', type=str, metavar='PATH',
                     help='path to save logs (default: none)')
@@ -225,13 +228,17 @@ def main_worker(gpu, ngpus_per_node, args):
         data_root = args.cifar10_path
         transform_list_10 = [  # adding basic augmentations
             transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.49139968, 0.48215827, 0.44653124], std=[0.2023, 0.1994, 0.2010])
+            transforms.RandomHorizontalFlip()
         ]
+        if args.auto_augment:
+            transform_list_10.append(CIFAR10Policy())
+        
+        transform_list_10.append(transforms.ToTensor())
+        transform_list_10.append(transforms.Normalize(mean=[0.49139968, 0.48215827, 0.44653124], std=[0.2023, 0.1994, 0.2010]))
+        
         if args.cutout: # adding cutout if specified
             transform_list_10.append(Cutout(n_holes=1, length=16))
-        
+
         train_dataset = datasets.CIFAR10(
             root=data_root,
             train=True,
@@ -252,13 +259,18 @@ def main_worker(gpu, ngpus_per_node, args):
         data_root = args.cifar100_path
         transform_list_100 = [
             transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761])
+            transforms.RandomHorizontalFlip()
         ]
+
+        if args.auto_augment:
+            transform_list_100.append(CIFAR10Policy())
+        
+        transform_list_100.append(transforms.ToTensor())
+        transform_list_100.append(transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761]))
+
         if args.cutout: # adding cutout if specified
             transform_list_100.append(Cutout(n_holes=1, length=8))
-            
+
         train_dataset = datasets.CIFAR100(
             root=data_root,
             train=True,

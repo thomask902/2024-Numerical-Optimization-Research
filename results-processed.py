@@ -79,6 +79,8 @@ grouped_df.columns = [
     'Total Time Std (min)' 
 ]
 
+pd.set_option('display.max_columns', None)
+
 # Display the DataFrame
 print(grouped_df)
 
