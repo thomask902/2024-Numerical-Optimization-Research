@@ -1,3 +1,5 @@
+# from https://github.com/DeepVoltaire/AutoAugment
+
 import numpy as np
 from PIL import Image, ImageEnhance, ImageOps
 import random

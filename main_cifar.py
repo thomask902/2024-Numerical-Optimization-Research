@@ -24,6 +24,7 @@ from utils.train_utils_gam import train_epoch_gam, evaluate_model, train_epoch_b
 from utils.optimizer_helper import get_optim_and_schedulers
 from utils.cutout import Cutout
 from utils.auto_augment import CIFAR10Policy
+from utils.rand_augment import RandAugment
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
@@ -230,13 +231,17 @@ def main_worker(gpu, ngpus_per_node, args):
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip()
         ]
+
         if args.auto_augment:
             transform_list_10.append(CIFAR10Policy())
+
+        if args.rand_augment:
+            transform_list_10.append(RandAugment(n=3, m=4))
         
         transform_list_10.append(transforms.ToTensor())
         transform_list_10.append(transforms.Normalize(mean=[0.49139968, 0.48215827, 0.44653124], std=[0.2023, 0.1994, 0.2010]))
         
-        if args.cutout: # adding cutout if specified
+        if args.cutout or args.auto_augment or args.rand_augment: # adding cutout if specified
             transform_list_10.append(Cutout(n_holes=1, length=16))
 
         train_dataset = datasets.CIFAR10(
@@ -264,11 +269,14 @@ def main_worker(gpu, ngpus_per_node, args):
 
         if args.auto_augment:
             transform_list_100.append(CIFAR10Policy())
+
+        if args.rand_augment:
+            transform_list_100.append(RandAugment(n=1, m=2))
         
         transform_list_100.append(transforms.ToTensor())
         transform_list_100.append(transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761]))
 
-        if args.cutout: # adding cutout if specified
+        if args.cutout or args.auto_augment or args.rand_augment:
             transform_list_100.append(Cutout(n_holes=1, length=8))
 
         train_dataset = datasets.CIFAR100(
