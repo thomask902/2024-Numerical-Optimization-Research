@@ -815,3 +815,4 @@ Epoch 200 learning rate: 0.0
 Epoch 200 time: 91.34001660346985 seconds
 Epoch 200 accuracy: 79.23%
 Total training time: 18279.21625328064 seconds
+slurmstepd: error: *** JOB 22591688 ON gra847 CANCELLED AT 2024-06-24T23:27:19 DUE TO TIME LIMIT ***
