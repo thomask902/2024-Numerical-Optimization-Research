@@ -4,6 +4,7 @@
 from torch import optim
 # from .util import LinearScheduler, CosineScheduler, ProportionScheduler
 from .gam import GAM
+from .gam_nonaccel import GAM_nonaccel
 
 def get_optim_and_schedulers(model, args):
     if args.base_opt == 'SGD':
@@ -31,8 +32,13 @@ def get_optim_and_schedulers(model, args):
     grad_rho_scheduler = None
     grad_norm_rho_scheduler = None
 
-    optimizer = GAM(params=model.parameters(), base_optimizer=base_optimizer, model=model,
-                    grad_rho_scheduler=grad_rho_scheduler, grad_norm_rho_scheduler=grad_norm_rho_scheduler,
-                    adaptive=args.adaptive, args=args)
+    if args.gam_nonaccel:
+        print("Using non-accelerated GAM")
+        optimizer = GAM_nonaccel(params=model.parameters(), base_optimizer=base_optimizer, model=model,
+                        adaptive=args.adaptive, args=args)
+    else:
+        optimizer = GAM(params=model.parameters(), base_optimizer=base_optimizer, model=model,
+                        grad_rho_scheduler=grad_rho_scheduler, grad_norm_rho_scheduler=grad_norm_rho_scheduler,
+                        adaptive=args.adaptive, args=args)
 
     return optimizer, base_optimizer, lr_scheduler, grad_rho_scheduler, grad_norm_rho_scheduler

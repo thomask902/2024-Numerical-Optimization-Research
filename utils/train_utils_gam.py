@@ -19,10 +19,10 @@ def train_epoch_gam(model, trainloader, optimizer, gpu, print_freq):
             images = data[0].cuda(gpu, non_blocking=True)
             target = data[1].cuda(gpu, non_blocking=True)
         
-        # calls set_closure from optimizer to go through GAM steps within that and return predictions and loss
+        # calls set_closure from optimizer to set up GAM with information
         optimizer.set_closure(loss_fn, images, target)
 
-        # calls step() from GAM
+        # calls step() from GAM to use info from closure to run steps
         predictions, loss = optimizer.step()
 
         # updates rho "radius/ball" for both the gradient and grad norm within update rho t, and calls accuracy functions and updates meters

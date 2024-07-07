@@ -98,6 +98,7 @@ parser.add_argument('--log_base',
 parser.add_argument("--base_opt", default='SGD', type=str, help="")
 parser.add_argument("--no_gam", default=0, type=int, 
                     help="set to 1 to train only on base optimizer")
+parser.add_argument("--gam_nonaccel", default=False, type=bool) # if set to true will run non-accelerated gam
 
 parser.add_argument("--grad_beta_0", default=1., type=float, help="scale for g0")
 parser.add_argument("--grad_beta_1", default=1., type=float, help="scale for g1")
@@ -130,20 +131,33 @@ def main():
 
     # default hps
     if args.dataset == 'CIFAR100':
+        args.rho = 0.04 # GAM non-accel rho
         if args.arch.startswith('resnet'):
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.02, 0.5, 0.6, 0.03
         elif args.arch.startswith('pyramidnet'):
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.04, 0.3, 0.5, 0.05
     elif args.dataset == 'CIFAR10':
+        args.rho = 0.1 # GAM non-accel rho
         if args.arch.startswith('resnet'):
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.03, 0.1, 0.1, 0.05
         elif args.arch.startswith('pyramidnet'):
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.03, 0.1, 0.1, 0.03
 
+    # Non-accelerated GAM alpha/scaling parameter
+    if args.arch == 'resnet18_c': 
+        args.alpha = 0.3
+    else:
+        args.alpha = 0.1
+
+
     args.grad_beta_2 = 1 - args.grad_beta_0
     args.grad_beta_3 = 1 - args.grad_beta_1
+    
+    if args.gam_nonaccel:
+        log_description = "GAMNonAccelerated"
+    else:
+        log_description = 'GAM'
 
-    log_description = 'GAM'
     args.log_path = os.path.join(args.log_base, args.dataset, log_description, "log.txt")
 
     if args.seed is not None:
@@ -316,7 +330,7 @@ def main_worker(gpu, ngpus_per_node, args):
     print('tensorboard dir {}'.format(log_dir))
     tensor_writer = SummaryWriter(log_dir)
 
-    # get base opt and schedulers
+    # get base opt and schedulers (will return non-accelerated gam if it has been specified)
     optimizer, base_optimizer, lr_scheduler, grad_rho_scheduler, grad_norm_rho_scheduler = get_optim_and_schedulers(
         model, args)
 
