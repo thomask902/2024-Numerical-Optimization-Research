@@ -184,7 +184,7 @@ class GAM_nonaccel(torch.optim.Optimizer):
             # calculate ft again from adversarial weights
             g_adv, f_t_adv = self.grad_norm_grad()
 
-            print("difference in f_t:", torch.norm(f_t_adv - f_t))
+            # print("difference in f_t:", torch.norm(f_t_adv - f_t))
 
             # reverse perturbation from GAM adv point, returning parameter tensors to their original value
             self.unperturb(perturbation_vec)
