@@ -82,6 +82,6 @@ grouped_df.columns = [
 pd.set_option('display.max_columns', None)
 
 # Display the DataFrame
-print(grouped_df)
+#print(grouped_df)
 
-#print(grouped_df.loc[grouped_df["Optimizer"] == "gamsgd"])
+print(grouped_df.loc[grouped_df["Data Augmentation"] == "basicaug"])

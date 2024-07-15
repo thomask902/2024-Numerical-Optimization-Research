@@ -3,7 +3,7 @@ from torch.distributed import ReduceOp
 import contextlib
 
 
-class GAM_nonaccel(torch.optim.Optimizer):
+class GNOM(torch.optim.Optimizer):
     # init is required for any custom optimizer class
     def __init__(self, params, base_optimizer, model, rho_scheduler=None,
                  adaptive=False, perturb_eps=1e-12, args=None,
@@ -12,7 +12,7 @@ class GAM_nonaccel(torch.optim.Optimizer):
         defaults = dict(adaptive=adaptive, **kwargs)
 
         # Initialize the base class (torch.optim.Optimizer) with the model parameters and default dictionary
-        super(GAM_nonaccel, self).__init__(params, defaults)
+        super(GNOM, self).__init__(params, defaults)
 
         # initilizing instance variables/direct attributes
         self.rho_scheduler = rho_scheduler
@@ -23,15 +23,9 @@ class GAM_nonaccel(torch.optim.Optimizer):
         self.adaptive = adaptive
         self.args = args
 
-        # gam non-accelerated parameters
-        self.rho = args.rho
-        self.alpha = args.alpha
-
         # uses get grad reduce to check the passed gradient reduction type (mean or sum)
         self.get_grad_reduce(grad_reduce)
 
-        # sets rho scheduler for gradient and gradient norm if there is one
-        self.update_rho_t()
 
     # checks argument to see if sum or mean have been declared as reduction type and sets them, throws error if neither
     def get_grad_reduce(self, grad_reduce: str):
@@ -48,20 +42,10 @@ class GAM_nonaccel(torch.optim.Optimizer):
         else:
             raise ValueError('"grad_reduce" should be one of ["mean", "sum"].')
 
-    # updates rho "radius/ball" for rho if scheduler exists
-    @torch.no_grad() # Stops gradient from being automatically calculated and tracked by pytorch. 
-                     # Important for performing updates to model parameters or other tensors but do not need to compute gradients
-    def update_rho_t(self):
-        if self.rho_scheduler is not None:
-            self.rho = self.rho_scheduler.step()
-
     # calculates an approximation of the gradient of the norm of the gradient, f_t
     def grad_norm_grad(self):
         # Compute gradient vector
         grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
-
-        # Compute gradient vector norm
-        grad_vec_norm = torch.norm(grad_vec)
 
         # Compute Hessian-vector product
         hessian_vec_prod_dict = torch.autograd.grad(
@@ -71,50 +55,15 @@ class GAM_nonaccel(torch.optim.Optimizer):
         # Concatenate the results over the different components of the network
         hessian_vec_prod = torch.cat([g.contiguous().view(-1) for g in hessian_vec_prod_dict])
 
-        # Compute f_t and its norm
-        f_t = hessian_vec_prod / grad_vec_norm
-
-        return grad_vec, f_t
-
-    # perturbs weights based on f_t and returns the perturbation vector rho * f_t / ||f_t||
-    @torch.no_grad()
-    def perturb_weights(self, f_t):
-        f_t_norm = torch.norm(f_t)
-
-        # Compute perturbation scale
-        scale = self.rho / (f_t_norm + self.perturb_eps)
-
-        perturbation_vec = f_t * scale
-
-        # Apply perturbation to the model parameters
-        start_idx = 0
-        for p in self.model.parameters():
-            numel = p.numel()
-            perturbation = perturbation_vec[start_idx:start_idx + numel].view_as(p)
-            p.add_(perturbation)
-            start_idx += numel
-
-        return perturbation_vec
-
-    # takes perturbation vectors and returns weights to original values
-    @torch.no_grad()
-    def unperturb(self, perturbation_vec):
-        start_idx = 0
-        for p in self.model.parameters():
-            numel = p.numel()
-            perturbation = perturbation_vec[start_idx:start_idx + numel].view_as(p)
-            p.sub_(perturbation)
-            start_idx += numel
+        return hessian_vec_prod
 
     # performs scaled combination of calculated gradients and sets p.grad values to new gradient
-    def set_gradients(self, g_0, f_t_adv):
-        combined_grad = g_0 + self.alpha * self.rho * f_t_adv
-
+    def set_gradients(self, g):
         # Set the gradients manually for optimizer step
         start_idx = 0
         for p in self.model.parameters():
             numel = p.numel()
-            p.grad = combined_grad[start_idx:start_idx + numel].view_as(p).clone()
+            p.grad = g[start_idx:start_idx + numel].view_as(p).clone()
             start_idx += numel
 
 
@@ -168,29 +117,15 @@ class GAM_nonaccel(torch.optim.Optimizer):
             # calculate oracle loss gradient/gradient at original weights (g_0)
             outputs, loss_value = get_grad()
 
-            # calculate g_0 and ft (norm of gradient norm, ft = hessian@w * grad@w / ||grad@w||)
-            g_0, f_t = self.grad_norm_grad()
-
-            # adjusts weights to the GAM adversarial point using ft, w_adv (max gradient norm within rho of weights, weights_adv = weights + rho * ft/||ft||)
-            perturbation_vec = self.perturb_weights(f_t)
+            # calculate g (gradient of gradient norm squared, g = hessian@w * grad@w)
+            g = self.grad_norm_grad()
 
             # clear gradient manually to ensure graph is not being tracked
             for p in self.model.parameters():
                 p.grad = None
 
-            # get gradient from GAM adv weights (g_adv)
-            get_grad()
-
-            # calculate ft again from adversarial weights
-            g_adv, f_t_adv = self.grad_norm_grad()
-
-            # print("difference in f_t:", torch.norm(f_t_adv - f_t))
-
-            # reverse perturbation from GAM adv point, returning parameter tensors to their original value
-            self.unperturb(perturbation_vec)
-
-            # combine to find g_2 = g_0 + alpha * g_1 (g_1 = rho * ft@w_adv) and set to p.grad
-            self.set_gradients(g_0, f_t_adv)
+            # set gradient to hessian vector product, g
+            self.set_gradients(g)
 
         # synchronize gradients across workers
         self._sync_grad()
@@ -213,4 +148,4 @@ class GAM_nonaccel(torch.optim.Optimizer):
     #     self.base_optimizer.add_param_group(param_group)
 
     def __repr__(self):
-        return f'GAM_nonaccel({self.base_optimizer.__class__.__name__})'
+        return f'GNOM({self.base_optimizer.__class__.__name__})'

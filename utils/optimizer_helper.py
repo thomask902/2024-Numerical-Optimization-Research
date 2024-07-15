@@ -5,6 +5,7 @@ from torch import optim
 # from .util import LinearScheduler, CosineScheduler, ProportionScheduler
 from .gam import GAM
 from .gam_nonaccel import GAM_nonaccel
+from .gnom import GNOM
 
 def get_optim_and_schedulers(model, args):
     if args.base_opt == 'SGD':
@@ -35,6 +36,10 @@ def get_optim_and_schedulers(model, args):
     if args.gam_nonaccel:
         print("Using non-accelerated GAM")
         optimizer = GAM_nonaccel(params=model.parameters(), base_optimizer=base_optimizer, model=model,
+                        adaptive=args.adaptive, args=args)
+    elif args.GNOM:
+        print("Using Gradient-Norm Only Minimization (GNOM)")
+        optimizer = GNOM(params=model.parameters(), base_optimizer=base_optimizer, model=model,
                         adaptive=args.adaptive, args=args)
     else:
         optimizer = GAM(params=model.parameters(), base_optimizer=base_optimizer, model=model,

@@ -19,6 +19,7 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.tensorboard import SummaryWriter
+from utils.gnom import GNOM
 
 from utils.train_utils_gam import train_epoch_gam, evaluate_model, train_epoch_base
 from utils.optimizer_helper import get_optim_and_schedulers
@@ -99,6 +100,7 @@ parser.add_argument("--base_opt", default='SGD', type=str, help="")
 parser.add_argument("--no_gam", default=0, type=int, 
                     help="set to 1 to train only on base optimizer")
 parser.add_argument("--gam_nonaccel", default=False, type=bool) # if set to true will run non-accelerated gam
+parser.add_argument("--GNOM", default=False, type=bool) # if trye will run gradient norm only minimization
 
 parser.add_argument("--grad_beta_0", default=1., type=float, help="scale for g0")
 parser.add_argument("--grad_beta_1", default=1., type=float, help="scale for g1")
@@ -155,7 +157,9 @@ def main():
     
     if args.gam_nonaccel:
         log_description = "GAMNonAccelerated"
-    else:
+    elif args.GNOM:
+        log_description = "GNOM"
+    else: 
         log_description = 'GAM'
 
     args.log_path = os.path.join(args.log_base, args.dataset, log_description, "log.txt")
