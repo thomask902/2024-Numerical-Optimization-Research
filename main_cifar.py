@@ -50,6 +50,8 @@ parser.add_argument('-b', '--batch-size', default=256, type=int,
                          'using Data Parallel or Distributed Data Parallel')
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate', dest='lr')
+parser.add_argument('--lr-scheduler', default='cosine', type=str,
+                    help='set learning rate scheduler')
 parser.add_argument('--wd', '--weight-decay', default=5e-4, type=float,
                     metavar='W', help='weight decay (default: 1e-4)',
                     dest='weight_decay')
@@ -99,8 +101,10 @@ parser.add_argument('--log_base',
 parser.add_argument("--base_opt", default='SGD', type=str, help="")
 parser.add_argument("--no_gam", default=0, type=int, 
                     help="set to 1 to train only on base optimizer")
-parser.add_argument("--gam_nonaccel", default=False, type=bool) # if set to true will run non-accelerated gam
-parser.add_argument("--GNOM", default=False, type=bool) # if trye will run gradient norm only minimization
+parser.add_argument("--gam_nonaccel", default=False, type=bool,
+                    help='if set to true will run non-accelerated gam')
+parser.add_argument("--GNOM", default=False, type=bool,
+                    help='if true will run gradient norm only minimization')
 
 parser.add_argument("--grad_beta_0", default=1., type=float, help="scale for g0")
 parser.add_argument("--grad_beta_1", default=1., type=float, help="scale for g1")
@@ -355,10 +359,13 @@ def main_worker(gpu, ngpus_per_node, args):
         else:
             train_epoch_gam(model, train_loader, optimizer, gpu, args.print_freq)
 
-        lr_scheduler.step()
-        current_lr = lr_scheduler.get_last_lr()[0]
-        print(f"Epoch {epoch + 1} learning rate: {current_lr}")
-        tensor_writer.add_scalar('Learning Rate', current_lr, epoch)
+        if lr_scheduler is not None:
+            lr_scheduler.step()
+            current_lr = lr_scheduler.get_last_lr()[0]
+            print(f"Epoch {epoch + 1} learning rate: {current_lr}")
+            tensor_writer.add_scalar('Learning Rate', current_lr, epoch)
+        else:
+            print(f"Epoch {epoch + 1} learning rate:", args.lr)
 
         accuracy = evaluate_model(model, val_loader, gpu)
 

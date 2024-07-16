@@ -20,8 +20,11 @@ def get_optim_and_schedulers(model, args):
     else:
         raise NotImplementedError
 
+    if args.lr_scheduler == "cosine":
     # learning rate scheduler is cosine annealing for lr, grad rho and grad norm rho
-    lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(base_optimizer, T_max=args.epochs)
+        lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(base_optimizer, T_max=args.epochs)
+    else:
+        lr_scheduler = None
 
     # optional grad_rho_scheduler and grad_norm_rho_scheduler
     # grad_rho_scheduler = ProportionScheduler(pytorch_lr_scheduler=lr_scheduler, max_lr=args.lr, min_lr=0.0,
