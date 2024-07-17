@@ -1,0 +1,27 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+usage: main_cifar.py [-h] [-a ARCH] [-j N] [--epochs N] [-b N] [--lr LR]
+                     [--lr-scheduler LR_SCHEDULER] [--wd W] [--momentum M]
+                     [--epochs_decay EPOCHS_DECAY] [-p N] [--pretrained]
+                     [--world-size WORLD_SIZE] [--rank RANK]
+                     [--dist-url DIST_URL] [--dist-backend DIST_BACKEND]
+                     [--seed SEED] [--gpu GPU] [--multiprocessing-distributed]
+                     [--benchmark BENCHMARK] [--cifar10_path DIR_C]
+                     [--cifar100_path DIR_C] [--dataset DATASET]
+                     [--cutout CUTOUT] [--auto-augment AUTO_AUGMENT]
+                     [--rand-augment RAND_AUGMENT] [--log_base PATH]
+                     [--base_opt BASE_OPT] [--no_gam NO_GAM]
+                     [--gam_nonaccel GAM_NONACCEL] [--GNOM GNOM]
+                     [--grad_beta_0 GRAD_BETA_0] [--grad_beta_1 GRAD_BETA_1]
+                     [--grad_beta_2 GRAD_BETA_2] [--grad_beta_3 GRAD_BETA_3]
+                     [--grad_rho GRAD_RHO] [--grad_norm_rho GRAD_NORM_RHO]
+                     [--adaptive ADAPTIVE] [--label_smoothing LABEL_SMOOTHING]
+                     [--grad_gamma GRAD_GAMMA]
+main_cifar.py: error: unrecognized arguments: --auto-augement True
+model name space ['resnet101_c', 'resnet152_c', 'resnet18_c', 'resnet34_c', 'resnet50_c']
