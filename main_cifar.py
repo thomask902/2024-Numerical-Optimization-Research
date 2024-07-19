@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 import os
 import random
 import warnings
@@ -163,10 +164,25 @@ def main():
         log_description = "GAMNonAccelerated"
     elif args.GNOM:
         log_description = "GNOM"
+    elif args.no_gam == 1:
+        log_description = "SGD"
     else: 
         log_description = 'GAM'
 
-    args.log_path = os.path.join(args.log_base, args.dataset, log_description, "log.txt")
+    if args.cutout:
+        aug = 'cutout'
+    elif args.rand_augment:
+        aug = "randaug"
+    elif args.auto_augment:
+        aug = "autoaug"
+    else:
+        aug = "basicaug"
+
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    learning_rate = "lr-" + str(args.lr)
+    batch_size = "batchsize-" + str(args.batch_size)
+    args.log_path = os.path.join(args.log_base, args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "log.txt")
 
     if args.seed is not None:
         # for reimplement
