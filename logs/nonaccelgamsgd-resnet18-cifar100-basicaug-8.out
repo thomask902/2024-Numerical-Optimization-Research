@@ -1,0 +1,321 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py:187: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+model name space ['resnet101_c', 'resnet152_c', 'resnet18_c', 'resnet34_c', 'resnet50_c']
+Use GPU: 0 for training
+=> creating model 'resnet18_c'
+Files already downloaded and verified
+Files already downloaded and verified
+tensorboard dir ./results/CIFAR100/GAMNonAccelerated
+Using non-accelerated GAM
+/home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/autograd/graph.py:744: UserWarning: Using backward() with create_graph=True will create a reference cycle between the parameter and its gradient which can cause a memory leak. We recommend using autograd.grad when creating the graph to avoid this. If you have to use this function, make sure to reset the .grad fields of your parameters to None after use to break the cycle and avoid the leak. (Triggered internally at /home/coulombc/wheels_builder/tmp.2617/python-3.11/torch/torch/csrc/autograd/engine.cpp:1203.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Batch 100, Loss: 3.6167
+Batch 200, Loss: 3.2999
+Batch 300, Loss: 3.1759
+Epoch 1 learning rate: 0.09999383162408304
+Epoch 1 time: 247.23500156402588 seconds
+Epoch 1 accuracy: 14.37%
+Batch 100, Loss: 2.9807
+Batch 200, Loss: 2.9099
+Batch 300, Loss: 2.7841
+Epoch 2 learning rate: 0.09997532801828658
+Epoch 2 time: 236.0426414012909 seconds
+Epoch 2 accuracy: 21.93%
+Batch 100, Loss: 2.5984
+Batch 200, Loss: 2.5290
+Batch 300, Loss: 2.4436
+Epoch 3 learning rate: 0.09994449374809851
+Epoch 3 time: 235.86925840377808 seconds
+Epoch 3 accuracy: 29.64%
+Batch 100, Loss: 2.2420
+Batch 200, Loss: 2.1366
+Batch 300, Loss: 2.0658
+Epoch 4 learning rate: 0.09990133642141359
+Epoch 4 time: 235.89160323143005 seconds
+Epoch 4 accuracy: 39.95%
+Batch 100, Loss: 1.9113
+Batch 200, Loss: 1.8769
+Batch 300, Loss: 1.8387
+Epoch 5 learning rate: 0.09984586668665642
+Epoch 5 time: 235.86291098594666 seconds
+Epoch 5 accuracy: 42.02%
+Batch 100, Loss: 1.6738
+Batch 200, Loss: 1.6581
+Batch 300, Loss: 1.6474
+Epoch 6 learning rate: 0.09977809823015402
+Epoch 6 time: 235.8032410144806 seconds
+Epoch 6 accuracy: 48.53%
+Batch 100, Loss: 1.5168
+Batch 200, Loss: 1.5345
+Batch 300, Loss: 1.5161
+Epoch 7 learning rate: 0.09969804777275901
+Epoch 7 time: 235.71158456802368 seconds
+Epoch 7 accuracy: 50.16%
+Batch 100, Loss: 1.4211
+Batch 200, Loss: 1.4163
+Batch 300, Loss: 1.4256
+Epoch 8 learning rate: 0.09960573506572391
+Epoch 8 time: 235.71342015266418 seconds
+Epoch 8 accuracy: 51.08%
+Batch 100, Loss: 1.3469
+Batch 200, Loss: 1.3576
+Batch 300, Loss: 1.3512
+Epoch 9 learning rate: 0.09950118288582789
+Epoch 9 time: 235.7515823841095 seconds
+Epoch 9 accuracy: 53.84%
+Batch 100, Loss: 1.2841
+Batch 200, Loss: 1.2882
+Batch 300, Loss: 1.3068
+Epoch 10 learning rate: 0.09938441702975691
+Epoch 10 time: 235.6851408481598 seconds
+Epoch 10 accuracy: 54.8%
+Batch 100, Loss: 1.2196
+Batch 200, Loss: 1.2679
+Batch 300, Loss: 1.2816
+Epoch 11 learning rate: 0.09925546630773871
+Epoch 11 time: 235.72505140304565 seconds
+Epoch 11 accuracy: 55.49%
+Batch 100, Loss: 1.1851
+Batch 200, Loss: 1.2226
+Batch 300, Loss: 1.2097
+Epoch 12 learning rate: 0.09911436253643445
+Epoch 12 time: 235.66922879219055 seconds
+Epoch 12 accuracy: 53.09%
+Batch 100, Loss: 1.1561
+Batch 200, Loss: 1.1672
+Batch 300, Loss: 1.2033
+Epoch 13 learning rate: 0.0989611405310883
+Epoch 13 time: 235.70079493522644 seconds
+Epoch 13 accuracy: 57.15%
+Batch 100, Loss: 1.1231
+Batch 200, Loss: 1.1696
+Batch 300, Loss: 1.1263
+Epoch 14 learning rate: 0.09879583809693739
+Epoch 14 time: 235.7568073272705 seconds
+Epoch 14 accuracy: 57.51%
+Batch 100, Loss: 1.0694
+Batch 200, Loss: 1.1157
+Batch 300, Loss: 1.1360
+Epoch 15 learning rate: 0.09861849601988384
+Epoch 15 time: 235.72906017303467 seconds
+Epoch 15 accuracy: 58.53%
+Batch 100, Loss: 1.0580
+Batch 200, Loss: 1.0725
+Batch 300, Loss: 1.1393
+Epoch 16 learning rate: 0.09842915805643157
+Epoch 16 time: 235.72520470619202 seconds
+Epoch 16 accuracy: 55.33%
+Batch 100, Loss: 1.0434
+Batch 200, Loss: 1.0803
+Batch 300, Loss: 1.0990
+Epoch 17 learning rate: 0.09822787092288993
+Epoch 17 time: 235.73388600349426 seconds
+Epoch 17 accuracy: 58.1%
+Batch 100, Loss: 0.9961
+Batch 200, Loss: 1.0748
+Batch 300, Loss: 1.0698
+Epoch 18 learning rate: 0.09801468428384717
+Epoch 18 time: 235.71975135803223 seconds
+Epoch 18 accuracy: 58.07%
+Batch 100, Loss: 0.9914
+Batch 200, Loss: 1.0300
+Batch 300, Loss: 1.0705
+Epoch 19 learning rate: 0.09778965073991652
+Epoch 19 time: 235.71020007133484 seconds
+Epoch 19 accuracy: 60.0%
+Batch 100, Loss: 0.9704
+Batch 200, Loss: 1.0101
+Batch 300, Loss: 1.0382
+Epoch 20 learning rate: 0.0975528258147577
+Epoch 20 time: 235.6833996772766 seconds
+Epoch 20 accuracy: 58.84%
+Batch 100, Loss: 0.9664
+Batch 200, Loss: 1.0258
+Batch 300, Loss: 1.0362
+Epoch 21 learning rate: 0.09730426794137728
+Epoch 21 time: 235.7251636981964 seconds
+Epoch 21 accuracy: 58.44%
+Batch 100, Loss: 0.9342
+Batch 200, Loss: 0.9981
+Batch 300, Loss: 1.0149
+Epoch 22 learning rate: 0.09704403844771128
+Epoch 22 time: 235.66567540168762 seconds
+Epoch 22 accuracy: 60.1%
+Batch 100, Loss: 0.9398
+Batch 200, Loss: 0.9819
+Batch 300, Loss: 1.0016
+Epoch 23 learning rate: 0.09677220154149338
+Epoch 23 time: 235.65841674804688 seconds
+Epoch 23 accuracy: 56.09%
+Batch 100, Loss: 0.9000
+Batch 200, Loss: 0.9581
+Batch 300, Loss: 1.0121
+Epoch 24 learning rate: 0.09648882429441258
+Epoch 24 time: 235.62144804000854 seconds
+Epoch 24 accuracy: 59.31%
+Batch 100, Loss: 0.9136
+Batch 200, Loss: 0.9628
+Batch 300, Loss: 0.9427
+Epoch 25 learning rate: 0.09619397662556435
+Epoch 25 time: 235.6501326560974 seconds
+Epoch 25 accuracy: 60.77%
+Batch 100, Loss: 0.9101
+Batch 200, Loss: 0.9298
+Batch 300, Loss: 0.9629
+Epoch 26 learning rate: 0.09588773128419906
+Epoch 26 time: 235.69760084152222 seconds
+Epoch 26 accuracy: 60.79%
+Batch 100, Loss: 0.8962
+Batch 200, Loss: 0.9215
+Batch 300, Loss: 0.9728
+Epoch 27 learning rate: 0.09557016383177226
+Epoch 27 time: 235.60381436347961 seconds
+Epoch 27 accuracy: 61.71%
+Batch 100, Loss: 0.8627
+Batch 200, Loss: 0.9139
+Batch 300, Loss: 0.9376
+Epoch 28 learning rate: 0.09524135262330098
+Epoch 28 time: 235.69055819511414 seconds
+Epoch 28 accuracy: 61.65%
+Batch 100, Loss: 0.8670
+Batch 200, Loss: 0.9286
+Batch 300, Loss: 0.9179
+Epoch 29 learning rate: 0.09490137878803079
+Epoch 29 time: 235.66689014434814 seconds
+Epoch 29 accuracy: 62.99%
+Batch 100, Loss: 0.8496
+Batch 200, Loss: 0.9144
+Batch 300, Loss: 0.9266
+Epoch 30 learning rate: 0.0945503262094184
+Epoch 30 time: 235.70178771018982 seconds
+Epoch 30 accuracy: 61.52%
+Batch 100, Loss: 0.8532
+Batch 200, Loss: 0.8870
+Batch 300, Loss: 0.9296
+Epoch 31 learning rate: 0.0941882815044347
+Epoch 31 time: 235.67438960075378 seconds
+Epoch 31 accuracy: 58.83%
+Batch 100, Loss: 0.8486
+Batch 200, Loss: 0.8812
+Batch 300, Loss: 0.9257
+Epoch 32 learning rate: 0.09381533400219319
+Epoch 32 time: 235.7050437927246 seconds
+Epoch 32 accuracy: 61.61%
+Batch 100, Loss: 0.8305
+Batch 200, Loss: 0.8843
+Batch 300, Loss: 0.9161
+Epoch 33 learning rate: 0.09343157572190958
+Epoch 33 time: 235.70054841041565 seconds
+Epoch 33 accuracy: 60.48%
+Batch 100, Loss: 0.8019
+Batch 200, Loss: 0.8903
+Batch 300, Loss: 0.9024
+Epoch 34 learning rate: 0.0930371013501972
+Epoch 34 time: 235.74575233459473 seconds
+Epoch 34 accuracy: 62.24%
+Batch 100, Loss: 0.8099
+Batch 200, Loss: 0.8442
+Batch 300, Loss: 0.9073
+Epoch 35 learning rate: 0.09263200821770463
+Epoch 35 time: 235.72751235961914 seconds
+Epoch 35 accuracy: 59.32%
+Batch 100, Loss: 0.7873
+Batch 200, Loss: 0.8580
+Batch 300, Loss: 0.8734
+Epoch 36 learning rate: 0.09221639627510078
+Epoch 36 time: 235.63984417915344 seconds
+Epoch 36 accuracy: 58.76%
+Batch 100, Loss: 0.8153
+Batch 200, Loss: 0.8611
+Batch 300, Loss: 0.8691
+Epoch 37 learning rate: 0.09179036806841355
+Epoch 37 time: 235.62977027893066 seconds
+Epoch 37 accuracy: 57.61%
+Batch 100, Loss: 0.7877
+Batch 200, Loss: 0.8314
+Batch 300, Loss: 0.8835
+Epoch 38 learning rate: 0.09135402871372812
+Epoch 38 time: 235.72454833984375 seconds
+Epoch 38 accuracy: 61.29%
+Batch 100, Loss: 0.7754
+Batch 200, Loss: 0.8401
+Batch 300, Loss: 0.8776
+Epoch 39 learning rate: 0.0909074858712512
+Epoch 39 time: 237.1671221256256 seconds
+Epoch 39 accuracy: 61.7%
+Batch 100, Loss: 0.7853
+Batch 200, Loss: 0.8096
+Batch 300, Loss: 0.8557
+Epoch 40 learning rate: 0.09045084971874741
+Epoch 40 time: 235.6710135936737 seconds
+Epoch 40 accuracy: 59.77%
+Batch 100, Loss: 0.7523
+Batch 200, Loss: 0.8182
+Batch 300, Loss: 0.8533
+Epoch 41 learning rate: 0.08998423292435458
+Epoch 41 time: 235.64837837219238 seconds
+Epoch 41 accuracy: 62.46%
+Batch 100, Loss: 0.7844
+Batch 200, Loss: 0.8188
+Batch 300, Loss: 0.8398
+Epoch 42 learning rate: 0.08950775061878455
+Epoch 42 time: 235.69472002983093 seconds
+Epoch 42 accuracy: 63.09%
+Batch 100, Loss: 0.7810
+Batch 200, Loss: 0.8060
+Batch 300, Loss: 0.8237
+Epoch 43 learning rate: 0.08902152036691653
+Epoch 43 time: 235.59882736206055 seconds
+Epoch 43 accuracy: 63.48%
+Batch 100, Loss: 0.7407
+Batch 200, Loss: 0.8025
+Batch 300, Loss: 0.8414
+Epoch 44 learning rate: 0.08852566213878951
+Epoch 44 time: 235.72452783584595 seconds
+Epoch 44 accuracy: 63.02%
+Batch 100, Loss: 0.7587
+Batch 200, Loss: 0.7887
+Traceback (most recent call last):
+  File "/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py", line 388, in <module>
+    main()
+  File "/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py", line 200, in main
+    main_worker(args.gpu, ngpus_per_node, args)
+  File "/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py", line 360, in main_worker
+    train_epoch_gam(model, train_loader, optimizer, gpu, args.print_freq)
+  File "/project/6070520/tkleinkn/Vanilla-GAM/utils/train_utils_gam.py", line 35, in train_epoch_gam
+    running_loss += loss.item()
+                    ^^^^^^^^^^^
+RuntimeError: CUDA error: uncorrectable ECC error encountered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+terminate called after throwing an instance of 'c10::Error'
+  what():  CUDA error: uncorrectable ECC error encountered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Exception raised from c10_cuda_check_implementation at /home/coulombc/wheels_builder/tmp.2617/python-3.11/torch/c10/cuda/CUDAException.cpp:43 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0xa9 (0x2b156dcce049 in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libc10.so)
+frame #1: c10::detail::torchCheckFail(char const*, char const*, unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) + 0xc2 (0x2b156dc7d32a in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libc10.so)
+frame #2: c10::cuda::c10_cuda_check_implementation(int, char const*, char const*, int, bool) + 0x3c6 (0x2b156d93a726 in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libc10_cuda.so)
+frame #3: <unknown function> + 0xecfc85 (0x2b1542d76c85 in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xeccb9c (0x2b1542d73b9c in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libtorch_cuda.so)
+frame #5: <unknown function> + 0x4ce700 (0x2b1535af7700 in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libtorch_python.so)
+frame #6: c10::TensorImpl::~TensorImpl() + 0x9 (0x2b156dca9ee9 in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libc10.so)
+frame #7: <unknown function> + 0x7626f8 (0x2b1535d8b6f8 in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libtorch_python.so)
+frame #8: THPVariable_subclass_dealloc(_object*) + 0x2ff (0x2b1535d8ba6f in /home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/lib/libtorch_python.so)
+<omitting python frames>
+frame #21: <unknown function> + 0x2394a (0x2b153075294a in /cvmfs/soft.computecanada.ca/gentoo/2023/x86-64-v3/usr/lib64/libc.so.6)
+frame #22: __libc_start_main + 0x85 (0x2b1530752a05 in /cvmfs/soft.computecanada.ca/gentoo/2023/x86-64-v3/usr/lib64/libc.so.6)
+
+/local/var/spool/slurmd/job23226743/slurm_script: line 14: 13302 Aborted                 (core dumped) python main_cifar.py --workers 16 --epochs 200 --batch-size 128 --gpu 0 --dataset "CIFAR100" --print-freq 100 --gam_nonaccel True
