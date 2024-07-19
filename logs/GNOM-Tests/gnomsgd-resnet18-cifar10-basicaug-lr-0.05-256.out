@@ -1,0 +1,460 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py:187: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+model name space ['resnet101_c', 'resnet152_c', 'resnet18_c', 'resnet34_c', 'resnet50_c']
+Use GPU: 0 for training
+=> creating model 'resnet18_c'
+Files already downloaded and verified
+Files already downloaded and verified
+tensorboard dir ./results/CIFAR10/GNOM
+Using Gradient-Norm Only Minimization (GNOM)
+/home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/autograd/graph.py:744: UserWarning: Using backward() with create_graph=True will create a reference cycle between the parameter and its gradient which can cause a memory leak. We recommend using autograd.grad when creating the graph to avoid this. If you have to use this function, make sure to reset the .grad fields of your parameters to None after use to break the cycle and avoid the leak. (Triggered internally at /home/coulombc/wheels_builder/tmp.2617/python-3.11/torch/torch/csrc/autograd/engine.cpp:1203.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Batch 10, Loss: 1813.3812
+Batch 20, Loss: 14362.8022
+Batch 30, Loss: 3964.5819
+Batch 40, Loss: 1209.2795
+Batch 50, Loss: 1179.8892
+Batch 60, Loss: 1172.0399
+Batch 70, Loss: 1034.8417
+Batch 80, Loss: 615.7186
+Batch 90, Loss: 966.5275
+Batch 100, Loss: 601.9877
+Batch 110, Loss: 550.0392
+Batch 120, Loss: 640.5223
+Batch 130, Loss: 560.6079
+Batch 140, Loss: 428.4207
+Batch 150, Loss: 551.7418
+Batch 160, Loss: 475.8627
+Batch 170, Loss: 421.3018
+Batch 180, Loss: 451.3410
+Batch 190, Loss: 367.5571
+Epoch 1 learning rate: 0.05
+Epoch 1 time: 123.75439500808716 seconds
+Epoch 1 accuracy: 10.42%
+Batch 10, Loss: 296.2277
+Batch 20, Loss: 304.8188
+Batch 30, Loss: 209.9973
+Batch 40, Loss: 259.0587
+Batch 50, Loss: 262.6053
+Batch 60, Loss: 301.0395
+Batch 70, Loss: 233.0677
+Batch 80, Loss: 237.9870
+Batch 90, Loss: 301.8835
+Batch 100, Loss: 174.0012
+Batch 110, Loss: 171.2872
+Batch 120, Loss: 102.5845
+Batch 130, Loss: 121.1753
+Batch 140, Loss: 118.8375
+Batch 150, Loss: 387.2038
+Batch 160, Loss: 690.2819
+Batch 170, Loss: 692.7698
+Batch 180, Loss: 589.8323
+Batch 190, Loss: 498.4012
+Epoch 2 learning rate: 0.05
+Epoch 2 time: 111.29719161987305 seconds
+Epoch 2 accuracy: 10.37%
+Batch 10, Loss: 363.3258
+Batch 20, Loss: 238.7617
+Batch 30, Loss: 232.0430
+Batch 40, Loss: 193.5033
+Batch 50, Loss: 195.6920
+Batch 60, Loss: 185.7178
+Batch 70, Loss: 156.5316
+Batch 80, Loss: 254.7956
+Batch 90, Loss: 278.8812
+Batch 100, Loss: 303.3344
+Batch 110, Loss: 311.2882
+Batch 120, Loss: 285.5342
+Batch 130, Loss: 208.0837
+Batch 140, Loss: 175.1103
+Batch 150, Loss: 149.8148
+Batch 160, Loss: 181.3011
+Batch 170, Loss: 103.3301
+Batch 180, Loss: 133.2648
+Batch 190, Loss: 108.2654
+Epoch 3 learning rate: 0.05
+Epoch 3 time: 111.202791929245 seconds
+Epoch 3 accuracy: 10.39%
+Batch 10, Loss: 112.7609
+Batch 20, Loss: 138.1379
+Batch 30, Loss: 139.0598
+Batch 40, Loss: 123.0130
+Batch 50, Loss: 121.0512
+Batch 60, Loss: 137.1578
+Batch 70, Loss: 118.1617
+Batch 80, Loss: 103.8271
+Batch 90, Loss: 81.9974
+Batch 100, Loss: 95.2437
+Batch 110, Loss: 67.3595
+Batch 120, Loss: 89.5679
+Batch 130, Loss: 67.8509
+Batch 140, Loss: 73.3363
+Batch 150, Loss: 69.5180
+Batch 160, Loss: 73.6180
+Batch 170, Loss: 67.9818
+Batch 180, Loss: 71.5816
+Batch 190, Loss: 77.4847
+Epoch 4 learning rate: 0.05
+Epoch 4 time: 111.28696012496948 seconds
+Epoch 4 accuracy: 11.66%
+Batch 10, Loss: 52.5663
+Batch 20, Loss: 63.4565
+Batch 30, Loss: 74.1714
+Batch 40, Loss: 60.1199
+Batch 50, Loss: 51.3537
+Batch 60, Loss: 72.8412
+Batch 70, Loss: 70.1297
+Batch 80, Loss: 42.3874
+Batch 90, Loss: 49.5857
+Batch 100, Loss: 44.2495
+Batch 110, Loss: 41.9845
+Batch 120, Loss: 56.5645
+Batch 130, Loss: 47.2559
+Batch 140, Loss: 52.1430
+Batch 150, Loss: 34.7913
+Batch 160, Loss: 44.2422
+Batch 170, Loss: 46.4200
+Batch 180, Loss: 43.9554
+Batch 190, Loss: 54.5230
+Epoch 5 learning rate: 0.05
+Epoch 5 time: 111.28244352340698 seconds
+Epoch 5 accuracy: 11.25%
+Batch 10, Loss: 51.6503
+Batch 20, Loss: 50.8544
+Batch 30, Loss: 38.3146
+Batch 40, Loss: 36.1671
+Batch 50, Loss: 41.4271
+Batch 60, Loss: 45.3551
+Batch 70, Loss: 37.2066
+Batch 80, Loss: 36.3481
+Batch 90, Loss: 33.0680
+Batch 100, Loss: 34.4266
+Batch 110, Loss: 43.4445
+Batch 120, Loss: 38.9196
+Batch 130, Loss: 37.3910
+Batch 140, Loss: 34.9648
+Batch 150, Loss: 37.6646
+Batch 160, Loss: 33.5827
+Batch 170, Loss: 33.8322
+Batch 180, Loss: 39.1621
+Batch 190, Loss: 29.2757
+Epoch 6 learning rate: 0.05
+Epoch 6 time: 111.24983763694763 seconds
+Epoch 6 accuracy: 10.51%
+Batch 10, Loss: 28.8505
+Batch 20, Loss: 29.5885
+Batch 30, Loss: 33.8386
+Batch 40, Loss: 24.6053
+Batch 50, Loss: 28.3535
+Batch 60, Loss: 33.3119
+Batch 70, Loss: 25.7979
+Batch 80, Loss: 35.9353
+Batch 90, Loss: 39.9534
+Batch 100, Loss: 39.8709
+Batch 110, Loss: 33.9462
+Batch 120, Loss: 33.8895
+Batch 130, Loss: 41.2782
+Batch 140, Loss: 26.6327
+Batch 150, Loss: 33.6064
+Batch 160, Loss: 30.2877
+Batch 170, Loss: 31.3013
+Batch 180, Loss: 23.5778
+Batch 190, Loss: 24.8304
+Epoch 7 learning rate: 0.05
+Epoch 7 time: 111.29682731628418 seconds
+Epoch 7 accuracy: 10.66%
+Batch 10, Loss: 23.2597
+Batch 20, Loss: 27.3383
+Batch 30, Loss: 24.5358
+Batch 40, Loss: 24.5268
+Batch 50, Loss: 30.4111
+Batch 60, Loss: 24.8686
+Batch 70, Loss: 24.2475
+Batch 80, Loss: 21.8965
+Batch 90, Loss: 24.4856
+Batch 100, Loss: 24.8670
+Batch 110, Loss: 23.2005
+Batch 120, Loss: 22.6098
+Batch 130, Loss: 24.6614
+Batch 140, Loss: 23.2494
+Batch 150, Loss: 39.6697
+Batch 160, Loss: 21.4716
+Batch 170, Loss: 20.9755
+Batch 180, Loss: 32.2250
+Batch 190, Loss: 21.9455
+Epoch 8 learning rate: 0.05
+Epoch 8 time: 111.27804064750671 seconds
+Epoch 8 accuracy: 10.7%
+Batch 10, Loss: 20.8901
+Batch 20, Loss: 22.6990
+Batch 30, Loss: 25.2161
+Batch 40, Loss: 20.1906
+Batch 50, Loss: 21.7423
+Batch 60, Loss: 21.9213
+Batch 70, Loss: 19.3393
+Batch 80, Loss: 22.7470
+Batch 90, Loss: 19.7721
+Batch 100, Loss: 22.7856
+Batch 110, Loss: 23.4414
+Batch 120, Loss: 18.1561
+Batch 130, Loss: 21.3737
+Batch 140, Loss: 21.4892
+Batch 150, Loss: 18.6957
+Batch 160, Loss: 18.0918
+Batch 170, Loss: 17.9834
+Batch 180, Loss: 17.3842
+Batch 190, Loss: 21.8222
+Epoch 9 learning rate: 0.05
+Epoch 9 time: 111.28149724006653 seconds
+Epoch 9 accuracy: 10.81%
+Batch 10, Loss: 18.3728
+Batch 20, Loss: 18.9444
+Batch 30, Loss: 16.3770
+Batch 40, Loss: 20.4119
+Batch 50, Loss: 21.5619
+Batch 60, Loss: 20.2694
+Batch 70, Loss: 25.0662
+Batch 80, Loss: 17.0500
+Batch 90, Loss: 16.6498
+Batch 100, Loss: 17.8829
+Batch 110, Loss: 16.8377
+Batch 120, Loss: 18.8796
+Batch 130, Loss: 17.0464
+Batch 140, Loss: 16.0957
+Batch 150, Loss: 14.3824
+Batch 160, Loss: 14.6390
+Batch 170, Loss: 15.9057
+Batch 180, Loss: 14.8513
+Batch 190, Loss: 14.5434
+Epoch 10 learning rate: 0.05
+Epoch 10 time: 111.25413703918457 seconds
+Epoch 10 accuracy: 10.99%
+Batch 10, Loss: 16.8632
+Batch 20, Loss: 15.1892
+Batch 30, Loss: 15.0620
+Batch 40, Loss: 13.2975
+Batch 50, Loss: 16.2769
+Batch 60, Loss: 16.1591
+Batch 70, Loss: 14.9812
+Batch 80, Loss: 15.7598
+Batch 90, Loss: 13.1752
+Batch 100, Loss: 13.0756
+Batch 110, Loss: 16.5249
+Batch 120, Loss: 17.1311
+Batch 130, Loss: 13.6122
+Batch 140, Loss: 12.6916
+Batch 150, Loss: 12.9524
+Batch 160, Loss: 14.6436
+Batch 170, Loss: 14.2254
+Batch 180, Loss: 12.5145
+Batch 190, Loss: 15.7447
+Epoch 11 learning rate: 0.05
+Epoch 11 time: 111.26631093025208 seconds
+Epoch 11 accuracy: 9.47%
+Batch 10, Loss: 12.6986
+Batch 20, Loss: 14.2311
+Batch 30, Loss: 13.9628
+Batch 40, Loss: 13.3362
+Batch 50, Loss: 12.6646
+Batch 60, Loss: 13.8008
+Batch 70, Loss: 11.1709
+Batch 80, Loss: 12.5099
+Batch 90, Loss: 12.5274
+Batch 100, Loss: 11.9226
+Batch 110, Loss: 12.5206
+Batch 120, Loss: 13.6170
+Batch 130, Loss: 13.0658
+Batch 140, Loss: 11.2521
+Batch 150, Loss: 11.6967
+Batch 160, Loss: 11.8330
+Batch 170, Loss: 12.4400
+Batch 180, Loss: 13.5285
+Batch 190, Loss: 11.9727
+Epoch 12 learning rate: 0.05
+Epoch 12 time: 111.2339859008789 seconds
+Epoch 12 accuracy: 10.11%
+Batch 10, Loss: 13.9137
+Batch 20, Loss: 10.6345
+Batch 30, Loss: 12.7883
+Batch 40, Loss: 11.5396
+Batch 50, Loss: 10.7694
+Batch 60, Loss: 10.4091
+Batch 70, Loss: 10.4426
+Batch 80, Loss: 10.3184
+Batch 90, Loss: 10.4225
+Batch 100, Loss: 11.0235
+Batch 110, Loss: 11.7959
+Batch 120, Loss: 12.0715
+Batch 130, Loss: 10.3738
+Batch 140, Loss: 10.2428
+Batch 150, Loss: 11.4429
+Batch 160, Loss: 9.8102
+Batch 170, Loss: 12.2360
+Batch 180, Loss: 9.9358
+Batch 190, Loss: 9.1387
+Epoch 13 learning rate: 0.05
+Epoch 13 time: 111.15227842330933 seconds
+Epoch 13 accuracy: 10.8%
+Batch 10, Loss: 9.1730
+Batch 20, Loss: 9.1146
+Batch 30, Loss: 11.5853
+Batch 40, Loss: 11.2472
+Batch 50, Loss: 9.4577
+Batch 60, Loss: 10.0163
+Batch 70, Loss: 8.9515
+Batch 80, Loss: 10.0734
+Batch 90, Loss: 9.1796
+Batch 100, Loss: 9.0192
+Batch 110, Loss: 8.9464
+Batch 120, Loss: 8.4447
+Batch 130, Loss: 10.3023
+Batch 140, Loss: 8.8409
+Batch 150, Loss: 8.5170
+Batch 160, Loss: 8.2936
+Batch 170, Loss: 7.6814
+Batch 180, Loss: 8.2052
+Batch 190, Loss: 8.6491
+Epoch 14 learning rate: 0.05
+Epoch 14 time: 111.20885562896729 seconds
+Epoch 14 accuracy: 10.63%
+Batch 10, Loss: 8.3002
+Batch 20, Loss: 8.2093
+Batch 30, Loss: 7.5369
+Batch 40, Loss: 7.8061
+Batch 50, Loss: 8.2385
+Batch 60, Loss: 8.5907
+Batch 70, Loss: 7.5874
+Batch 80, Loss: 7.6465
+Batch 90, Loss: 8.6911
+Batch 100, Loss: 7.8620
+Batch 110, Loss: 8.1660
+Batch 120, Loss: 8.4315
+Batch 130, Loss: 9.3526
+Batch 140, Loss: 7.9539
+Batch 150, Loss: 7.0854
+Batch 160, Loss: 7.4111
+Batch 170, Loss: 7.1476
+Batch 180, Loss: 6.7332
+Batch 190, Loss: 7.2522
+Epoch 15 learning rate: 0.05
+Epoch 15 time: 111.2390661239624 seconds
+Epoch 15 accuracy: 10.73%
+Batch 10, Loss: 7.7145
+Batch 20, Loss: 6.5178
+Batch 30, Loss: 7.0568
+Batch 40, Loss: 8.5169
+Batch 50, Loss: 6.6536
+Batch 60, Loss: 7.5752
+Batch 70, Loss: 7.7470
+Batch 80, Loss: 6.6591
+Batch 90, Loss: 6.7027
+Batch 100, Loss: 6.2532
+Batch 110, Loss: 6.3910
+Batch 120, Loss: 5.4176
+Batch 130, Loss: 6.5689
+Batch 140, Loss: 5.8487
+Batch 150, Loss: 6.1693
+Batch 160, Loss: 6.0871
+Batch 170, Loss: 6.7055
+Batch 180, Loss: 5.9449
+Batch 190, Loss: 6.2374
+Epoch 16 learning rate: 0.05
+Epoch 16 time: 111.28287839889526 seconds
+Epoch 16 accuracy: 10.7%
+Batch 10, Loss: 6.0528
+Batch 20, Loss: 6.2766
+Batch 30, Loss: 6.1533
+Batch 40, Loss: 5.8336
+Batch 50, Loss: 5.4001
+Batch 60, Loss: 5.4981
+Batch 70, Loss: 5.9362
+Batch 80, Loss: 5.7677
+Batch 90, Loss: 5.5927
+Batch 100, Loss: 5.6403
+Batch 110, Loss: 5.7713
+Batch 120, Loss: 6.0124
+Batch 130, Loss: 5.8981
+Batch 140, Loss: 4.9735
+Batch 150, Loss: 5.2213
+Batch 160, Loss: 5.0399
+Batch 170, Loss: 5.2155
+Batch 180, Loss: 4.9067
+Batch 190, Loss: 5.6581
+Epoch 17 learning rate: 0.05
+Epoch 17 time: 111.24266195297241 seconds
+Epoch 17 accuracy: 10.44%
+Batch 10, Loss: 5.4662
+Batch 20, Loss: 5.7200
+Batch 30, Loss: 5.3265
+Batch 40, Loss: 4.7750
+Batch 50, Loss: 5.2465
+Batch 60, Loss: 6.2459
+Batch 70, Loss: 6.4014
+Batch 80, Loss: 5.0324
+Batch 90, Loss: 5.8785
+Batch 100, Loss: 4.5150
+Batch 110, Loss: 4.8442
+Batch 120, Loss: 4.8221
+Batch 130, Loss: 4.3414
+Batch 140, Loss: 4.9024
+Batch 150, Loss: 4.6882
+Batch 160, Loss: 4.5051
+Batch 170, Loss: 4.7326
+Batch 180, Loss: 4.7307
+Batch 190, Loss: 4.4898
+Epoch 18 learning rate: 0.05
+Epoch 18 time: 111.14835739135742 seconds
+Epoch 18 accuracy: 10.56%
+Batch 10, Loss: 4.8061
+Batch 20, Loss: 4.2305
+Batch 30, Loss: 4.9777
+Batch 40, Loss: 4.7769
+Batch 50, Loss: 4.4508
+Batch 60, Loss: 4.0524
+Batch 70, Loss: 4.5181
+Batch 80, Loss: 4.5469
+Batch 90, Loss: 4.8121
+Batch 100, Loss: 4.3336
+Batch 110, Loss: 4.8121
+Batch 120, Loss: 4.3566
+Batch 130, Loss: 4.9838
+Batch 140, Loss: 5.2560
+Batch 150, Loss: 4.5677
+Batch 160, Loss: 4.1635
+Batch 170, Loss: 4.2206
+Batch 180, Loss: 4.0917
+Batch 190, Loss: 4.0337
+Epoch 19 learning rate: 0.05
+Epoch 19 time: 111.22975158691406 seconds
+Epoch 19 accuracy: 10.39%
+Batch 10, Loss: 4.4575
+Batch 20, Loss: 4.2828
+Batch 30, Loss: 4.2036
+Batch 40, Loss: 4.5738
+Batch 50, Loss: 4.0020
+Batch 60, Loss: 4.3205
+Batch 70, Loss: 3.7121
+Batch 80, Loss: 3.9516
+Batch 90, Loss: 4.1241
+Batch 100, Loss: 4.3253
+Batch 110, Loss: 3.5455
+Batch 120, Loss: 4.5387
+Batch 130, Loss: 3.8398
+Batch 140, Loss: 3.8378
+Batch 150, Loss: 3.8812
+Batch 160, Loss: 4.1135
+Batch 170, Loss: 4.0505
+Batch 180, Loss: 4.0241
+Batch 190, Loss: 4.3444
+Epoch 20 learning rate: 0.05
+Epoch 20 time: 111.21500492095947 seconds
+Epoch 20 accuracy: 10.71%
+Total training time: 2237.419776916504 seconds
