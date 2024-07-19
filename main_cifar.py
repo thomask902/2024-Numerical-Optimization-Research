@@ -378,6 +378,7 @@ def main_worker(gpu, ngpus_per_node, args):
         print(f"Epoch {epoch + 1} accuracy: {accuracy}%")
         tensor_writer.add_scalar('return_ACC@1/test', accuracy, epoch)
 
+    print("rho: ", args.rho, ", alpha: ", args.alpha)
     # print('Test top-1 acc: ', return_acc)
     end_time = time.time()
     elapsed_time = end_time - start_time
