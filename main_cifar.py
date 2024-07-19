@@ -137,13 +137,13 @@ def main():
 
     # default hps
     if args.dataset == 'CIFAR100':
-        args.rho = 0.04 # GAM non-accel rho
+        args.rho = 0.1 # GAM non-accel rho
         if args.arch.startswith('resnet'):
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.02, 0.5, 0.6, 0.03
         elif args.arch.startswith('pyramidnet'):
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.04, 0.3, 0.5, 0.05
     elif args.dataset == 'CIFAR10':
-        args.rho = 0.1 # GAM non-accel rho
+        args.rho = 0.04 # GAM non-accel rho
         if args.arch.startswith('resnet'):
             args.grad_norm_rho, args.grad_rho, args.grad_beta_0, args.grad_beta_1, args.grad_gamma = 0.2, 0.03, 0.1, 0.1, 0.05
         elif args.arch.startswith('pyramidnet'):
