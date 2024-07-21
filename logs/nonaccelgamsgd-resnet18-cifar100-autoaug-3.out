@@ -1013,3 +1013,209 @@ Batch 300, Loss: 0.4558
 Epoch 166 learning rate: 0.006962898649802815
 Epoch 166 time: 235.87755703926086 seconds
 Epoch 166 accuracy: 78.81%
+Batch 100, Loss: 0.4353
+Batch 200, Loss: 0.4388
+Batch 300, Loss: 0.4446
+Epoch 167 learning rate: 0.006568424278090438
+Epoch 167 time: 235.85289645195007 seconds
+Epoch 167 accuracy: 78.91%
+Batch 100, Loss: 0.4296
+Batch 200, Loss: 0.4332
+Batch 300, Loss: 0.4420
+Epoch 168 learning rate: 0.006184665997806824
+Epoch 168 time: 235.9974706172943 seconds
+Epoch 168 accuracy: 79.22%
+Batch 100, Loss: 0.4206
+Batch 200, Loss: 0.4269
+Batch 300, Loss: 0.4187
+Epoch 169 learning rate: 0.00581171849556533
+Epoch 169 time: 235.91302371025085 seconds
+Epoch 169 accuracy: 79.15%
+Batch 100, Loss: 0.4046
+Batch 200, Loss: 0.4271
+Batch 300, Loss: 0.4301
+Epoch 170 learning rate: 0.0054496737905816136
+Epoch 170 time: 235.75716352462769 seconds
+Epoch 170 accuracy: 79.21%
+Batch 100, Loss: 0.4060
+Batch 200, Loss: 0.4039
+Batch 300, Loss: 0.4087
+Epoch 171 learning rate: 0.005098621211969226
+Epoch 171 time: 235.91541075706482 seconds
+Epoch 171 accuracy: 79.29%
+Batch 100, Loss: 0.4085
+Batch 200, Loss: 0.3996
+Batch 300, Loss: 0.3996
+Epoch 172 learning rate: 0.004758647376699035
+Epoch 172 time: 235.8050491809845 seconds
+Epoch 172 accuracy: 79.81%
+Batch 100, Loss: 0.3917
+Batch 200, Loss: 0.3931
+Batch 300, Loss: 0.4106
+Epoch 173 learning rate: 0.00442983616822775
+Epoch 173 time: 235.86853194236755 seconds
+Epoch 173 accuracy: 80.09%
+Batch 100, Loss: 0.3920
+Batch 200, Loss: 0.3882
+Batch 300, Loss: 0.3795
+Epoch 174 learning rate: 0.004112268715800957
+Epoch 174 time: 235.89080095291138 seconds
+Epoch 174 accuracy: 79.86%
+Batch 100, Loss: 0.3823
+Batch 200, Loss: 0.3868
+Batch 300, Loss: 0.3851
+Epoch 175 learning rate: 0.003806023374435677
+Epoch 175 time: 235.85944604873657 seconds
+Epoch 175 accuracy: 79.81%
+Batch 100, Loss: 0.3621
+Batch 200, Loss: 0.3686
+Batch 300, Loss: 0.3698
+Epoch 176 learning rate: 0.003511175705587435
+Epoch 176 time: 235.90582990646362 seconds
+Epoch 176 accuracy: 80.12%
+Batch 100, Loss: 0.3652
+Batch 200, Loss: 0.3615
+Batch 300, Loss: 0.3765
+Epoch 177 learning rate: 0.0032277984585066333
+Epoch 177 time: 235.85699272155762 seconds
+Epoch 177 accuracy: 80.27%
+Batch 100, Loss: 0.3489
+Batch 200, Loss: 0.3599
+Batch 300, Loss: 0.3660
+Epoch 178 learning rate: 0.002955961552288729
+Epoch 178 time: 235.83308339118958 seconds
+Epoch 178 accuracy: 80.32%
+Batch 100, Loss: 0.3542
+Batch 200, Loss: 0.3684
+Batch 300, Loss: 0.3606
+Epoch 179 learning rate: 0.0026957320586227366
+Epoch 179 time: 235.95972561836243 seconds
+Epoch 179 accuracy: 80.15%
+Batch 100, Loss: 0.3516
+Batch 200, Loss: 0.3599
+Batch 300, Loss: 0.3409
+Epoch 180 learning rate: 0.002447174185242325
+Epoch 180 time: 235.86146473884583 seconds
+Epoch 180 accuracy: 80.35%
+Batch 100, Loss: 0.3549
+Batch 200, Loss: 0.3506
+Batch 300, Loss: 0.3419
+Epoch 181 learning rate: 0.0022103492600834954
+Epoch 181 time: 235.86598920822144 seconds
+Epoch 181 accuracy: 80.37%
+Batch 100, Loss: 0.3477
+Batch 200, Loss: 0.3352
+Batch 300, Loss: 0.3468
+Epoch 182 learning rate: 0.0019853157161528537
+Epoch 182 time: 235.81522583961487 seconds
+Epoch 182 accuracy: 80.45%
+Batch 100, Loss: 0.3360
+Batch 200, Loss: 0.3421
+Batch 300, Loss: 0.3379
+Epoch 183 learning rate: 0.001772129077110103
+Epoch 183 time: 235.89154314994812 seconds
+Epoch 183 accuracy: 80.6%
+Batch 100, Loss: 0.3379
+Batch 200, Loss: 0.3278
+Batch 300, Loss: 0.3312
+Epoch 184 learning rate: 0.0015708419435684529
+Epoch 184 time: 235.81088280677795 seconds
+Epoch 184 accuracy: 80.57%
+Batch 100, Loss: 0.3387
+Batch 200, Loss: 0.3233
+Batch 300, Loss: 0.3237
+Epoch 185 learning rate: 0.0013815039801161732
+Epoch 185 time: 235.82517528533936 seconds
+Epoch 185 accuracy: 80.7%
+Batch 100, Loss: 0.3264
+Batch 200, Loss: 0.3263
+Batch 300, Loss: 0.3238
+Epoch 186 learning rate: 0.0012041619030626347
+Epoch 186 time: 235.7282292842865 seconds
+Epoch 186 accuracy: 80.57%
+Batch 100, Loss: 0.3204
+Batch 200, Loss: 0.3169
+Batch 300, Loss: 0.3256
+Epoch 187 learning rate: 0.0010388594689117077
+Epoch 187 time: 235.92603373527527 seconds
+Epoch 187 accuracy: 80.59%
+Batch 100, Loss: 0.3180
+Batch 200, Loss: 0.3240
+Batch 300, Loss: 0.3118
+Epoch 188 learning rate: 0.0008856374635655645
+Epoch 188 time: 235.99374294281006 seconds
+Epoch 188 accuracy: 80.67%
+Batch 100, Loss: 0.3188
+Batch 200, Loss: 0.3048
+Batch 300, Loss: 0.3286
+Epoch 189 learning rate: 0.000744533692261307
+Epoch 189 time: 235.9306185245514 seconds
+Epoch 189 accuracy: 80.9%
+Batch 100, Loss: 0.3184
+Batch 200, Loss: 0.3153
+Batch 300, Loss: 0.3172
+Epoch 190 learning rate: 0.0006155829702431174
+Epoch 190 time: 235.87444353103638 seconds
+Epoch 190 accuracy: 80.74%
+Batch 100, Loss: 0.3054
+Batch 200, Loss: 0.3127
+Batch 300, Loss: 0.3112
+Epoch 191 learning rate: 0.0004988171141721235
+Epoch 191 time: 236.00184416770935 seconds
+Epoch 191 accuracy: 81.04%
+Batch 100, Loss: 0.3039
+Batch 200, Loss: 0.3138
+Batch 300, Loss: 0.3173
+Epoch 192 learning rate: 0.00039426493427611206
+Epoch 192 time: 236.0076024532318 seconds
+Epoch 192 accuracy: 80.98%
+Batch 100, Loss: 0.3087
+Batch 200, Loss: 0.3027
+Batch 300, Loss: 0.3033
+Epoch 193 learning rate: 0.00030195222724102046
+Epoch 193 time: 235.96880316734314 seconds
+Epoch 193 accuracy: 81.07%
+Batch 100, Loss: 0.3067
+Batch 200, Loss: 0.3063
+Batch 300, Loss: 0.3067
+Epoch 194 learning rate: 0.00022190176984600036
+Epoch 194 time: 235.8767192363739 seconds
+Epoch 194 accuracy: 81.12%
+Batch 100, Loss: 0.3139
+Batch 200, Loss: 0.3098
+Batch 300, Loss: 0.3076
+Epoch 195 learning rate: 0.00015413331334360192
+Epoch 195 time: 235.68524932861328 seconds
+Epoch 195 accuracy: 81.04%
+Batch 100, Loss: 0.2972
+Batch 200, Loss: 0.3024
+Batch 300, Loss: 0.3011
+Epoch 196 learning rate: 9.866357858642213e-05
+Epoch 196 time: 236.0109202861786 seconds
+Epoch 196 accuracy: 81.0%
+Batch 100, Loss: 0.3006
+Batch 200, Loss: 0.2999
+Batch 300, Loss: 0.3152
+Epoch 197 learning rate: 5.5506251901504864e-05
+Epoch 197 time: 235.8877625465393 seconds
+Epoch 197 accuracy: 80.99%
+Batch 100, Loss: 0.3046
+Batch 200, Loss: 0.3014
+Batch 300, Loss: 0.3005
+Epoch 198 learning rate: 2.4671981713420017e-05
+Epoch 198 time: 236.11274576187134 seconds
+Epoch 198 accuracy: 80.88%
+Batch 100, Loss: 0.2975
+Batch 200, Loss: 0.2956
+Batch 300, Loss: 0.3045
+Epoch 199 learning rate: 6.168375916970619e-06
+Epoch 199 time: 236.0178291797638 seconds
+Epoch 199 accuracy: 81.18%
+Batch 100, Loss: 0.3031
+Batch 200, Loss: 0.3009
+Batch 300, Loss: 0.2927
+Epoch 200 learning rate: 0.0
+Epoch 200 time: 235.85034656524658 seconds
+Epoch 200 accuracy: 81.05%
+rho:  0.1 , alpha:  0.3
+Total training time: 47205.2128777504 seconds
