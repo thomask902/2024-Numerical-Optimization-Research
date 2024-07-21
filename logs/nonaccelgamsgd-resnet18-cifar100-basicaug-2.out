@@ -1211,3 +1211,11 @@ Batch 300, Loss: 0.0310
 Epoch 199 learning rate: 6.168375916970619e-06
 Epoch 199 time: 235.73875904083252 seconds
 Epoch 199 accuracy: 79.73%
+Batch 100, Loss: 0.0313
+Batch 200, Loss: 0.0308
+Batch 300, Loss: 0.0308
+Epoch 200 learning rate: 0.0
+Epoch 200 time: 235.7074670791626 seconds
+Epoch 200 accuracy: 79.57%
+rho:  0.1 , alpha:  0.3
+Total training time: 47168.636830329895 seconds
