@@ -183,6 +183,7 @@ def main():
     learning_rate = "lr-" + str(args.lr)
     batch_size = "batchsize-" + str(args.batch_size)
     args.log_path = os.path.join(args.log_base, args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "log.txt")
+    args.model_saved_path = os.path.join("saved_models", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), ".pth")
 
     if args.seed is not None:
         # for reimplement
@@ -395,10 +396,19 @@ def main_worker(gpu, ngpus_per_node, args):
         tensor_writer.add_scalar('return_ACC@1/test', accuracy, epoch)
 
     print("rho: ", args.rho, ", alpha: ", args.alpha)
-    # print('Test top-1 acc: ', return_acc)
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"Total training time: {elapsed_time} seconds")
+
+    # find gradient norm
+    grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
+    grad_vec_norm = torch.norm(grad_vec)
+    print(f"Norm of the Gradient: {grad_vec_norm}")
+
+    # saving model to find gradient and hessian information (MAY NOT BE NECESSARY)
+    # torch.save(model.state_dict, args.model_saved_path)
+
+
 
 
 if __name__ == '__main__':
