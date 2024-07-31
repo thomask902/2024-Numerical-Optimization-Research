@@ -403,7 +403,7 @@ def main_worker(gpu, ngpus_per_node, args):
     # find gradient norm
     grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
     grad_vec_norm = torch.norm(grad_vec)
-    print(f"Norm of the Gradient: {grad_vec_norm}")
+    print(f"Norm of the Gradient: {grad_vec_norm:.10f}")
 
     # saving model to find gradient and hessian information (MAY NOT BE NECESSARY)
     # torch.save(model.state_dict, args.model_saved_path)
