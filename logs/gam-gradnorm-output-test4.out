@@ -1,0 +1,41 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py:208: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+model name space ['resnet101_c', 'resnet152_c', 'resnet18_c', 'resnet34_c', 'resnet50_c']
+Use GPU: 0 for training
+=> creating model 'resnet18_c'
+Files already downloaded and verified
+Files already downloaded and verified
+tensorboard dir ./results/CIFAR10/GAM/basicaug/lr-0.1/batchsize-128/2024-07-31-14:27:23
+Batch 100, Loss: 2.3327
+Batch 200, Loss: 1.5424
+Batch 300, Loss: 1.4645
+Epoch 1 learning rate: 0.05
+Epoch 1 time: 106.98735046386719 seconds
+Epoch 1 accuracy: 35.05%
+Batch 100, Loss: 1.3385
+Batch 200, Loss: 1.3029
+Batch 300, Loss: 1.2838
+Epoch 2 learning rate: 0.0
+Epoch 2 time: 100.26984715461731 seconds
+Epoch 2 accuracy: 40.87%
+rho:  0.04 , alpha:  0.3
+Total training time: 207.25945472717285 seconds
+Traceback (most recent call last):
+  File "/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py", line 429, in <module>
+    main()
+  File "/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py", line 221, in main
+    main_worker(args.gpu, ngpus_per_node, args)
+  File "/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py", line 413, in main_worker
+    for group in model.param_groups:
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1709, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: 'ResNet_c' object has no attribute 'param_groups'

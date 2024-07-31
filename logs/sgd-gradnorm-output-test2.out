@@ -1,0 +1,16 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+Traceback (most recent call last):
+  File "/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py", line 31, in <module>
+    from utils.pyhessian import hessian
+  File "/project/6070520/tkleinkn/Vanilla-GAM/utils/pyhessian/__init__.py", line 26, in <module>
+    from .hessian import hessian
+  File "/project/6070520/tkleinkn/Vanilla-GAM/utils/pyhessian/hessian.py", line 26, in <module>
+    from pyhessian.utils import group_product, group_add, normalization, get_params_grad, hessian_vector_product, orthnormal
+ModuleNotFoundError: No module named 'pyhessian'
