@@ -450,6 +450,9 @@ def main_worker(gpu, ngpus_per_node, args):
         top_eigenvalues, top_eigenvector = hessian_comp.eigenvalues()
         print("The top Hessian eigenvalue of this model is %.4f"%top_eigenvalues[-1])
 
+        density_eigen, density_weight = hessian_comp.density()
+        get_esd_plot(density_eigen, density_weight)
+
     # saving model to find gradient and hessian information (MAY NOT BE NECESSARY)
     # torch.save(model.state_dict, args.model_saved_path)
 
