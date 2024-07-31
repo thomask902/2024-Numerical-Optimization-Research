@@ -30,6 +30,7 @@ from utils.rand_augment import RandAugment
 
 from utils.pyhessian import hessian
 from utils.density_plot import get_esd_plot
+from utils.smooth_cross_entropy import smooth_crossentropy
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
@@ -424,7 +425,25 @@ def main_worker(gpu, ngpus_per_node, args):
         print(f"Norm of the Gradient: {grad_norm:.10e}")
 
     if args.print_eigenvalues:
-        print()
+        model.eval()
+
+        def loss_fn(predictions, targets):
+            return smooth_crossentropy(predictions, targets).mean()
+
+        for data in train_loader:
+            break
+
+        if gpu == -1:
+            device = torch.device('cpu')
+            images, targets = data[0].to(device), data[1].to(device)
+            hessian_comp = hessian(model, loss_fn, data=(images, targets), cuda=False)
+        else:
+            images = data[0].cuda(gpu, non_blocking=True)
+            targets = data[1].cuda(gpu, non_blocking=True)
+            hessian_comp = hessian(model, loss_fn, data=(images, targets), cuda=True)
+        
+        top_eigenvalues, top_eigenvector = hessian_comp.eigenvalues()
+        print("The top Hessian eigenvalue of this model is %.4f"%top_eigenvalues[-1])
 
     # saving model to find gradient and hessian information (MAY NOT BE NECESSARY)
     # torch.save(model.state_dict, args.model_saved_path)
