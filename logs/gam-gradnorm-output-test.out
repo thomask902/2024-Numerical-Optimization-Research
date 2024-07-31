@@ -1,0 +1,62 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py:204: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+model name space ['resnet101_c', 'resnet152_c', 'resnet18_c', 'resnet34_c', 'resnet50_c']
+Use GPU: 0 for training
+=> creating model 'resnet18_c'
+Files already downloaded and verified
+Files already downloaded and verified
+tensorboard dir ./results/CIFAR10/GAM/basicaug/lr-0.1/batchsize-128/2024-07-31-13:17:50
+Batch 100, Loss: 2.4612
+Batch 200, Loss: 1.7465
+Batch 300, Loss: 1.6149
+Epoch 1 learning rate: 0.05
+Epoch 1 time: 107.3952808380127 seconds
+Epoch 1 accuracy: 22.43%
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py:204: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+model name space ['resnet101_c', 'resnet152_c', 'resnet18_c', 'resnet34_c', 'resnet50_c']
+Use GPU: 0 for training
+=> creating model 'resnet18_c'
+Files already downloaded and verified
+Files already downloaded and verified
+tensorboard dir ./results/CIFAR10/SGD/basicaug/lr-0.1/batchsize-128/2024-07-31-13:20:09
+Batch 100, Loss: 2.1846
+Batch 200, Loss: 1.5065
+Batch 300, Loss: 1.3467
+Epoch 1 learning rate: 0.05
+Epoch 1 time: 31.664881706237793 seconds
+Epoch 1 accuracy: 36.12%
+Batch 100, Loss: 1.1593
+Batch 200, Loss: 1.1410
+Batch 300, Loss: 1.0832
+Epoch 2 learning rate: 0.0
+Epoch 2 time: 25.51831889152527 seconds
+Epoch 2 accuracy: 50.11%
+rho:  0.04 , alpha:  0.3
+Total training time: 57.18459963798523 seconds
+Norm of the Gradient: 1.1247727870941162
+Batch 100, Loss: 1.5026
+Batch 200, Loss: 1.4637
+Batch 300, Loss: 1.4236
+Epoch 2 learning rate: 0.0
+Epoch 2 time: 100.21399927139282 seconds
+Epoch 2 accuracy: 33.59%
+rho:  0.04 , alpha:  0.3
+Total training time: 207.61085891723633 seconds
+Norm of the Gradient: 0.0
