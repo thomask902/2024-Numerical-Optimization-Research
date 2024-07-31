@@ -28,6 +28,9 @@ from utils.cutout import Cutout
 from utils.auto_augment import CIFAR10Policy
 from utils.rand_augment import RandAugment
 
+from utils.pyhessian import hessian
+from utils.density_plot import get_esd_plot
+
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
                      and callable(models.__dict__[name]))
@@ -128,6 +131,8 @@ parser.add_argument("--grad_gamma", default=0.03, type=int, help="")
 # outputs
 parser.add_argument("--print-grad-norm", default=False, type=bool, 
                     help="if true will output norm of final gradient values")
+parser.add_argument("--print-eigenvalues", default=False, type=bool, 
+                    help="if true will output distribution of eigenvalues of hessian")
 
 return_acc = 0
 
@@ -410,14 +415,16 @@ def main_worker(gpu, ngpus_per_node, args):
 
         norm = 0.0
         # iterating over each group of params and each p=param in group
-        for group in model.param_groups:
-            for p in group['params']:
-                if p.grad is None: continue
-                g = p.grad.data
-                norm += torch.sum(g ** 2)
+        for p in model.parameters():
+            if p.grad is None: continue
+            g = p.grad.data
+            norm += torch.sum(g ** 2)
         
         grad_norm = torch.sqrt(norm)
         print(f"Norm of the Gradient: {grad_norm:.10e}")
+
+    if args.print_eigenvalues:
+        print()
 
     # saving model to find gradient and hessian information (MAY NOT BE NECESSARY)
     # torch.save(model.state_dict, args.model_saved_path)
