@@ -5,7 +5,7 @@ import torchvision.datasets as datasets
 from utils.smooth_cross_entropy import smooth_crossentropy
 
 # function to return gradient and hessian information after training is complete
-def grad_hess_info(model, train_loader, gpu):
+def grad_hess_info(model, train_loader, optimizer, gpu):
     # first need to use train loader to get one batch and then pass into model and use loss function to compute gradients (get from model validate)
     model.eval()
 
@@ -22,9 +22,8 @@ def grad_hess_info(model, train_loader, gpu):
         images = data[0].cuda(gpu, non_blocking=True)
         targets = data[1].cuda(gpu, non_blocking=True)
 
-    outputs = model(images)
-    loss = loss_fn(outputs, targets)
-    loss.backward()
+    # calls set_closure from optimizer to set up GAM with information
+    optimizer.set_closure(loss_fn, images, targets)
 
     # then take gradients and find norm
     grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
@@ -37,31 +36,7 @@ def grad_hess_info(model, train_loader, gpu):
     return grad_vec_norm
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+"""
 # TESTING
 
 # Load and save a pretrained ResNet-18 model
@@ -80,3 +55,4 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size= 32, num_wo
 grad_norm_test = grad_hess_info(model, train_loader, -1)
 
 print(grad_norm_test)
+"""

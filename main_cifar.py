@@ -31,6 +31,7 @@ from utils.rand_augment import RandAugment
 from utils.pyhessian import hessian
 from utils.density_plot import get_esd_plot
 from utils.smooth_cross_entropy import smooth_crossentropy
+from utils.grad_hess_info import grad_hess_info
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
@@ -414,14 +415,18 @@ def main_worker(gpu, ngpus_per_node, args):
         #grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
         #grad_vec_norm = torch.norm(grad_vec)
 
-        norm = 0.0
-        # iterating over each group of params and each p=param in group
-        for p in model.parameters():
-            if p.grad is None: continue
-            g = p.grad.data
-            norm += torch.sum(g ** 2)
+        if args.no_gam == 1:
+            norm = 0.0
+            #iterating over each group of params and each p=param in group
+            for p in model.parameters():
+                if p.grad is None: continue
+                g = p.grad.data
+                norm += torch.sum(g ** 2)
+            grad_norm = torch.sqrt(norm)
+        else:
+            grad_norm = grad_hess_info(model, train_loader, optimizer, args.gpu)
+
         
-        grad_norm = torch.sqrt(norm)
         print(f"Norm of the Gradient: {grad_norm:.10e}")
 
     if args.print_eigenvalues:
