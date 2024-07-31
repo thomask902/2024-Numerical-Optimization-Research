@@ -125,6 +125,10 @@ parser.add_argument("--label_smoothing", default=0.1, type=float, help="Use 0.0 
 
 parser.add_argument("--grad_gamma", default=0.03, type=int, help="")
 
+# outputs
+parser.add_argument("--print-grad-norm", default=False, type=bool, 
+                    help="if true will output norm of final gradient values")
+
 return_acc = 0
 
 model_names = sorted(name for name in models.__dict__
@@ -400,10 +404,20 @@ def main_worker(gpu, ngpus_per_node, args):
     elapsed_time = end_time - start_time
     print(f"Total training time: {elapsed_time} seconds")
 
-    # find gradient norm
-    grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
-    grad_vec_norm = torch.norm(grad_vec)
-    print(f"Norm of the Gradient: {grad_vec_norm:.10e}")
+    if args.print_grad_norm:
+        #grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
+        #grad_vec_norm = torch.norm(grad_vec)
+
+        norm = 0.0
+        # iterating over each group of params and each p=param in group
+        for group in model.param_groups:
+            for p in group['params']:
+                if p.grad is None: continue
+                g = p.grad.data
+                norm += torch.sum(g ** 2)
+        
+        grad_norm = torch.sqrt(norm)
+        print(f"Norm of the Gradient: {grad_norm:.10e}")
 
     # saving model to find gradient and hessian information (MAY NOT BE NECESSARY)
     # torch.save(model.state_dict, args.model_saved_path)
