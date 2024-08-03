@@ -458,7 +458,13 @@ def main_worker(gpu, ngpus_per_node, args):
 
 
         density_eigen, density_weight = hessian_comp.density()
-        get_esd_plot(density_eigen, density_weight, args.eigenvalue_path)
+        # Get the current file's directory and move one level up
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_file_dir)
+
+        # Define the path where the plot will be saved
+        plot_path = os.path.join(parent_dir, args.eigenvalue_path)
+        get_esd_plot(density_eigen, density_weight, plot_path)
 
     # saving model to find gradient and hessian information (NOT NECESSARY)
     # torch.save(model.state_dict, args.model_saved_path)
