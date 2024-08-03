@@ -19,6 +19,7 @@
 #*
 
 import math
+import os
 import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
@@ -34,6 +35,11 @@ def get_esd_plot(eigenvalues, weights, path):
     plt.yticks(fontsize=12)
     plt.axis([np.min(eigenvalues) - 1, np.max(eigenvalues) + 1, None, None])
     plt.tight_layout()
+
+    
+    directory = os.path.dirname(path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     plt.savefig(path)
 
 

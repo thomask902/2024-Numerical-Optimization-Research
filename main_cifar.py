@@ -131,10 +131,8 @@ parser.add_argument("--label_smoothing", default=0.1, type=float, help="Use 0.0 
 parser.add_argument("--grad_gamma", default=0.03, type=int, help="")
 
 # outputs
-parser.add_argument("--print-grad-norm", default=False, type=bool, 
-                    help="if true will output norm of final gradient values")
-parser.add_argument("--print-eigenvalues", default=False, type=bool, 
-                    help="if true will output distribution of eigenvalues of hessian")
+parser.add_argument("--print-grad-info", default=False, type=bool, 
+                    help="if true will output norm of final gradient values and hessian information")
 
 return_acc = 0
 
@@ -434,7 +432,7 @@ def main_worker(gpu, ngpus_per_node, args):
         print(f"Norm of the Gradient: {grad_norm:.10e}")
     '''
 
-    if args.print_eigenvalues:
+    if args.print_grad_info:
         model.eval()
 
         def loss_fn(predictions, targets):
@@ -462,7 +460,7 @@ def main_worker(gpu, ngpus_per_node, args):
         density_eigen, density_weight = hessian_comp.density()
         get_esd_plot(density_eigen, density_weight, args.eigenvalue_path)
 
-    # saving model to find gradient and hessian information (MAY NOT BE NECESSARY)
+    # saving model to find gradient and hessian information (NOT NECESSARY)
     # torch.save(model.state_dict, args.model_saved_path)
 
 
