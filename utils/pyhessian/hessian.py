@@ -266,3 +266,13 @@ class hessian():
             weight_list_full.append(list(weight_list.cpu().numpy()))
 
         return eigen_list_full, weight_list_full
+
+    def get_gradient_norm(self):
+        """
+        Compute and return the L2 norm of the gradients of the loss function.
+        """
+        grad_norm = 0.0
+        for grad in self.gradsH:
+            norm += torch.sum(grad ** 2)
+        grad_norm = torch.sqrt(norm)
+        return grad_norm

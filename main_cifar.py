@@ -411,6 +411,7 @@ def main_worker(gpu, ngpus_per_node, args):
     elapsed_time = end_time - start_time
     print(f"Total training time: {elapsed_time} seconds")
 
+    '''
     if args.print_grad_norm:
         #grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
         #grad_vec_norm = torch.norm(grad_vec)
@@ -428,6 +429,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
         
         print(f"Norm of the Gradient: {grad_norm:.10e}")
+    '''
 
     if args.print_eigenvalues:
         model.eval()
@@ -449,6 +451,9 @@ def main_worker(gpu, ngpus_per_node, args):
         
         top_eigenvalues, top_eigenvector = hessian_comp.eigenvalues()
         print("The top Hessian eigenvalue of this model is %.4f"%top_eigenvalues[-1])
+
+        grad_norm = hessian_comp.get_gradient_norm()
+        print(f"Norm of the Gradient: {grad_norm:.10e}")
 
         density_eigen, density_weight = hessian_comp.density()
         get_esd_plot(density_eigen, density_weight)
