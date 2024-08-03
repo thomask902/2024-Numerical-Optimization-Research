@@ -31,7 +31,7 @@ from utils.rand_augment import RandAugment
 from utils.pyhessian import hessian
 from utils.density_plot import get_esd_plot
 from utils.smooth_cross_entropy import smooth_crossentropy
-from utils.grad_hess_info import grad_hess_info
+# from utils.grad_hess_info import grad_hess_info
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
@@ -454,6 +454,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
         grad_norm = hessian_comp.get_gradient_norm()
         print(f"Norm of the Gradient: {grad_norm:.10e}")
+
 
         density_eigen, density_weight = hessian_comp.density()
         get_esd_plot(density_eigen, density_weight)
