@@ -194,7 +194,10 @@ def main():
     learning_rate = "lr-" + str(args.lr)
     batch_size = "batchsize-" + str(args.batch_size)
     args.log_path = os.path.join(args.log_base, args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "log.txt")
-    args.model_saved_path = os.path.join("saved_models", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), ".pth")
+    #args.model_saved_path = os.path.join("saved_models", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), ".pth")
+    args.eigenvalue_path = os.path.join("../eigenvalue_distr", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), ".pdf")
+
+
 
     if args.seed is not None:
         # for reimplement
@@ -457,7 +460,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
 
         density_eigen, density_weight = hessian_comp.density()
-        get_esd_plot(density_eigen, density_weight)
+        get_esd_plot(density_eigen, density_weight, args.eigenvalue_path)
 
     # saving model to find gradient and hessian information (MAY NOT BE NECESSARY)
     # torch.save(model.state_dict, args.model_saved_path)
