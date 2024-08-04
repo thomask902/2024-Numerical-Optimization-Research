@@ -193,7 +193,7 @@ def main():
     batch_size = "batchsize-" + str(args.batch_size)
     args.log_path = os.path.join(args.log_base, args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "log.txt")
     #args.model_saved_path = os.path.join("saved_models", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), ".pth")
-    args.eigenvalue_path = os.path.join("eigenvalue_distr", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "eigenvalue.pdf")
+    args.eigenvalue_path = os.path.join("eigenvalues", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "eigenvalue.pdf")
 
 
 
@@ -411,26 +411,6 @@ def main_worker(gpu, ngpus_per_node, args):
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"Total training time: {elapsed_time} seconds")
-
-    '''
-    if args.print_grad_norm:
-        #grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
-        #grad_vec_norm = torch.norm(grad_vec)
-
-        if args.no_gam == 1:
-            norm = 0.0
-            #iterating over each group of params and each p=param in group
-            for p in model.parameters():
-                if p.grad is None: continue
-                g = p.grad.data
-                norm += torch.sum(g ** 2)
-            grad_norm = torch.sqrt(norm)
-        else:
-            grad_norm = grad_hess_info(model, train_loader, optimizer, args.gpu)
-
-        
-        print(f"Norm of the Gradient: {grad_norm:.10e}")
-    '''
 
     if args.print_grad_info:
         model.eval()
