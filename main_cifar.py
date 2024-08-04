@@ -193,7 +193,7 @@ def main():
     batch_size = "batchsize-" + str(args.batch_size)
     args.log_path = os.path.join(args.log_base, args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "log.txt")
     #args.model_saved_path = os.path.join("saved_models", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), ".pth")
-    args.eigenvalue_path = os.path.join("../eigenvalue_distr", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "eigenvalue.pdf")
+    args.eigenvalue_path = os.path.join("eigenvalue_distr", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "eigenvalue.pdf")
 
 
 
@@ -460,13 +460,9 @@ def main_worker(gpu, ngpus_per_node, args):
         density_eigen, density_weight = hessian_comp.density()
         # Get the current file's directory and move one level up
         current_file_dir = os.path.dirname(os.path.abspath(__file__))
-        print("current path:", current_file_dir)
-        parent_dir = os.path.dirname(current_file_dir)
-        print("parent path:", parent_dir)
 
         # Define the path where the plot will be saved
-        plot_path = os.path.join(parent_dir, args.eigenvalue_path)
-        print("send to path:", plot_path)
+        plot_path = os.path.join(current_file_dir, args.eigenvalue_path)
         get_esd_plot(density_eigen, density_weight, plot_path)
 
     # saving model to find gradient and hessian information (NOT NECESSARY)
