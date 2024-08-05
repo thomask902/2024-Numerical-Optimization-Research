@@ -192,7 +192,7 @@ def main():
     learning_rate = "lr-" + str(args.lr)
     batch_size = "batchsize-" + str(args.batch_size)
     args.log_path = os.path.join(args.log_base, args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "log.txt")
-    #args.model_saved_path = os.path.join("saved_models", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), ".pth")
+    args.model_saved_path = os.path.join("saved_models", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "model.pth")
     args.eigenvalue_path = os.path.join("eigenvalues", args.dataset, log_description, aug, learning_rate, batch_size, str(timestamp), "eigenvalue.pdf")
 
 
@@ -435,13 +435,23 @@ def main_worker(gpu, ngpus_per_node, args):
             hessian_comp = hessian(model, loss_fn, data=(images, targets), cuda=True)
         
         top_eigenvalues, top_eigenvector = hessian_comp.eigenvalues()
-        print("The top Hessian eigenvalue of this model is %.4f"%top_eigenvalues[-1])
+        print("Largest Hessian Eigenvalue: %.4f"%top_eigenvalues[-1])
 
         grad_norm = hessian_comp.get_gradient_norm()
         print(f"Norm of the Gradient: {grad_norm:.10e}")
 
 
         density_eigen, density_weight = hessian_comp.density()
+        # Iterate over each sublist in eigen_list_full to find smallest eigenvalue
+        smallest_value = float('inf')
+
+        for eigen_list in density_eigen:
+            min_value_in_list = min(eigen_list)
+            if min_value_in_list < smallest_value:
+                smallest_value = min_value_in_list
+        
+        print(f"Smallest Hessian Eigenvalue: {smallest_value:.4f}")
+
         # Get the current file's directory and move one level up
         current_file_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -450,10 +460,11 @@ def main_worker(gpu, ngpus_per_node, args):
         get_esd_plot(density_eigen, density_weight, plot_path)
 
     # saving model to find gradient and hessian information (NOT NECESSARY)
-    # torch.save(model.state_dict, args.model_saved_path)
-
-
-
+    model_path = os.path.join(current_file_dir, args.model_saved_path)
+    model_directory = os.path.dirname(model_path)
+    if not os.path.exists(model_directory):
+        os.makedirs(model_directory)
+    torch.save(model.state_dict(), model_path)
 
 if __name__ == '__main__':
     main()
