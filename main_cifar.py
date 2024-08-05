@@ -417,8 +417,12 @@ def main_worker(gpu, ngpus_per_node, args):
 
         def loss_fn(predictions, targets):
             return smooth_crossentropy(predictions, targets).mean()
+        
+        train_loader_info = torch.utils.data.DataLoader(
+            train_dataset, batch_size=128, shuffle=(train_sampler is None),
+            num_workers=args.workers, pin_memory=True, sampler=train_sampler)
 
-        for data in train_loader:
+        for data in train_loader_info:
             break
 
         if gpu == -1:
