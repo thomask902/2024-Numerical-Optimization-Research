@@ -1,6 +1,7 @@
 import torch
 from torch.distributed import ReduceOp
 import contextlib
+import numpy as np
 
 
 class GNOM_noised(torch.optim.Optimizer):
@@ -21,6 +22,8 @@ class GNOM_noised(torch.optim.Optimizer):
         self.base_optimizer = base_optimizer
         self.param_groups = self.base_optimizer.param_groups # param groupings will be defined as they are in base optimizer
         self.adaptive = adaptive
+        self.noise_threshold = args.noise_threshold
+        self.noise_radius = args.noise_radius
         self.args = args
 
         # uses get grad reduce to check the passed gradient reduction type (mean or sum)
@@ -41,6 +44,44 @@ class GNOM_noised(torch.optim.Optimizer):
             self.manual_average = False
         else:
             raise ValueError('"grad_reduce" should be one of ["mean", "sum"].')
+
+    # calculates the norm of the gradient
+    def grad_norm(self):
+        # Compute gradient vector
+        grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
+
+        # Compute gradient vector norm
+        grad_vec_norm = torch.norm(grad_vec)
+
+        return grad_vec_norm
+
+    @torch.no_grad()
+    def perturb_weights(self):
+        # Compute random number U from the uniform distribution [0, 1]
+        U = np.random.uniform(0, 1)
+        print("Uniform Distribution Value:", U)
+
+        # Compute d random numbers from the multivariate normal distribution Y ~ N(0, I_d)
+        d = sum(p.numel() for p in self.model.parameters()) 
+        Y = np.random.normal(0, 1, d)
+        print("Multivariate Normal Distribution Values:", Y)
+        
+        # Normalize the norm distribution vector
+        norm_Y = np.linalg.norm(Y)
+        Y_normalized = Y / norm_Y
+        
+        # Combine to get the sample point in the ball: radius * U^(1/d) * (Y / ||Y||)
+        perturbation_vec = self.noise_radius * U**(1/d) * Y_normalized
+
+        print("Pertubation vector:", perturbation_vec) 
+        
+        # Apply perturbation to the model parameters
+        start_idx = 0
+        for p in self.model.parameters():
+            numel = p.numel()
+            perturbation = torch.tensor(perturbation_vec[start_idx:start_idx + numel], dtype=p.dtype, device=p.device).view_as(p)
+            p.add_(perturbation)
+            start_idx += numel
 
     # calculates an approximation of the gradient of the norm of the gradient, f_t
     def grad_norm_grad(self):
@@ -114,8 +155,24 @@ class GNOM_noised(torch.optim.Optimizer):
             get_grad = self.forward_backward_func
 
         with self.maybe_no_sync():
-            # calculate oracle loss gradient/gradient at original weights (g_0)
+            # calculate oracle loss gradient/gradient at original weights
             outputs, loss_value = get_grad()
+
+            # calculate gradient norm to determine if noise needs to be added
+            grad_norm = self.grad_norm()
+
+            print("Gradient Norm:", grad_norm)
+
+            for param in self.model.parameters():
+                print(f"Original parameter: {param.data}")
+
+            # check if norm exceeds threshold, if not add noise
+            if grad_norm < self.noise_threshold:
+                print("Under threshold, adding noise")
+                self.perturb_weights()
+
+            for param in self.model.parameters():
+                print(f"Perturbed parameter: {param.data}")
 
             # calculate g (gradient of gradient norm squared, g = hessian@w * grad@w)
             g = self.grad_norm_grad()
@@ -148,4 +205,4 @@ class GNOM_noised(torch.optim.Optimizer):
     #     self.base_optimizer.add_param_group(param_group)
 
     def __repr__(self):
-        return f'GNOM({self.base_optimizer.__class__.__name__})'
+        return f'GNOM_noised({self.base_optimizer.__class__.__name__})'
