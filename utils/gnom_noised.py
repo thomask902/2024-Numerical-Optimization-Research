@@ -167,6 +167,8 @@ class GNOM_noised(torch.optim.Optimizer):
             if grad_norm < self.noise_threshold:
                 self.noise_applied_count += 1
                 self.perturb_weights()
+                # calculate oracle loss gradient/gradient at new weights
+                outputs, loss_value = get_grad()
 
             # calculate g (gradient of gradient norm squared, g = hessian@w * grad@w)
             g = self.grad_norm_grad()
