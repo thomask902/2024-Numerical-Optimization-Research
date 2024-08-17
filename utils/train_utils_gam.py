@@ -4,7 +4,7 @@ import torch
 from utils.smooth_cross_entropy import smooth_crossentropy
 
 
-def train_epoch_gam(model, trainloader, optimizer, gpu, print_freq):
+def train_epoch_gam(model, trainloader, optimizer, gpu, args):
 
     def loss_fn(predictions, targets):
         return smooth_crossentropy(predictions, targets).mean()
@@ -33,9 +33,14 @@ def train_epoch_gam(model, trainloader, optimizer, gpu, print_freq):
         optimizer.zero_grad()
         
         running_loss += loss.item()
-        if (i + 1) % print_freq == 0:  # Print every 100 mini-batches
-            print(f'Batch {i + 1}, Loss: {running_loss / print_freq:.4f}')
+        if (i + 1) % args.print_freq == 0:
+            print(f'Batch {i + 1}, Loss: {running_loss / args.print_freq:.4f}')
             running_loss = 0.0
+
+    if args.GNOM_noised:
+        percentage_noise, noise_count = optimizer.get_noise_statistics()
+        print(f"Noise applied in {noise_count} out of {optimizer.total_batches} batches, "
+            f"{percentage_noise:.2f}")
 
     # error catching if no loss value
     if torch.isnan(loss).any():

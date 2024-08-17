@@ -26,6 +26,10 @@ class GNOM_noised(torch.optim.Optimizer):
         self.noise_radius = args.noise_radius
         self.args = args
 
+        # Add counters for tracking noise addition
+        self.noise_applied_count = 0
+        self.total_batches = 0
+
         # uses get grad reduce to check the passed gradient reduction type (mean or sum)
         self.get_grad_reduce(grad_reduce)
 
@@ -59,12 +63,10 @@ class GNOM_noised(torch.optim.Optimizer):
     def perturb_weights(self):
         # Compute random number U from the uniform distribution [0, 1]
         U = np.random.uniform(0, 1)
-        print("Uniform Distribution Value:", U)
 
         # Compute d random numbers from the multivariate normal distribution Y ~ N(0, I_d)
         d = sum(p.numel() for p in self.model.parameters()) 
         Y = np.random.normal(0, 1, d)
-        print("Multivariate Normal Distribution Values:", Y)
         
         # Normalize the norm distribution vector
         norm_Y = np.linalg.norm(Y)
@@ -72,8 +74,6 @@ class GNOM_noised(torch.optim.Optimizer):
         
         # Combine to get the sample point in the ball: radius * U^(1/d) * (Y / ||Y||)
         perturbation_vec = self.noise_radius * U**(1/d) * Y_normalized
-
-        print("Pertubation vector:", perturbation_vec) 
         
         # Apply perturbation to the model parameters
         start_idx = 0
@@ -155,24 +155,18 @@ class GNOM_noised(torch.optim.Optimizer):
             get_grad = self.forward_backward_func
 
         with self.maybe_no_sync():
+            self.total_batches += 1
+
             # calculate oracle loss gradient/gradient at original weights
             outputs, loss_value = get_grad()
 
             # calculate gradient norm to determine if noise needs to be added
             grad_norm = self.grad_norm()
 
-            print("Gradient Norm:", grad_norm)
-
-            for param in self.model.parameters():
-                print(f"Original parameter: {param.data}")
-
             # check if norm exceeds threshold, if not add noise
             if grad_norm < self.noise_threshold:
-                print("Under threshold, adding noise")
+                self.noise_applied_count += 1
                 self.perturb_weights()
-
-            for param in self.model.parameters():
-                print(f"Perturbed parameter: {param.data}")
 
             # calculate g (gradient of gradient norm squared, g = hessian@w * grad@w)
             g = self.grad_norm_grad()
@@ -200,6 +194,18 @@ class GNOM_noised(torch.optim.Optimizer):
 
     def load_state_dict(self, state_dict):
         self.base_optimizer.load_state_dict(state_dict)
+
+    # Method to reset counters (e.g., at the beginning of an epoch)
+    def reset_counters(self):
+        self.noise_applied_count = 0
+        self.total_batches = 0
+
+    # Method to get noise statistics after an epoch
+    def get_noise_statistics(self):
+        if self.total_batches == 0:
+            return 0.0, 0
+        percentage_noise = (self.noise_applied_count / self.total_batches) * 100
+        return percentage_noise, self.noise_applied_count
 
     # def add_param_group(self, param_group):
     #     self.base_optimizer.add_param_group(param_group)

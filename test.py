@@ -44,6 +44,11 @@ optimizer.set_closure(loss_fn, inputs, targets)
 # calls step() from GNOM to use info from closure to run steps
 predictions, loss = optimizer.step()
 
+percentage_noise, noise_count = optimizer.get_noise_statistics()
+
+print(f"Noise applied in {noise_count} out of {optimizer.total_batches} batches "
+          f"({percentage_noise:.2f}% of batches).")
+
 # Print the updated model parameters
 for param in model.parameters():
     print(f"Updated parameter: {param.data}")

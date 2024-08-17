@@ -393,7 +393,7 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.no_gam:
             train_epoch_base(model, train_loader, optimizer, gpu, args.print_freq)
         else:
-            train_epoch_gam(model, train_loader, optimizer, gpu, args.print_freq)
+            train_epoch_gam(model, train_loader, optimizer, gpu, args)
 
         if lr_scheduler is not None:
             lr_scheduler.step()
