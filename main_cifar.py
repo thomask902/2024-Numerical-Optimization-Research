@@ -20,8 +20,6 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.tensorboard import SummaryWriter
-from utils.gnom import GNOM
-
 from utils.train_utils_gam import train_epoch_gam, evaluate_model, train_epoch_base
 from utils.optimizer_helper import get_optim_and_schedulers
 from utils.cutout import Cutout
@@ -105,12 +103,19 @@ parser.add_argument('--log_base',
 
 # opt
 parser.add_argument("--base_opt", default='SGD', type=str, help="")
-parser.add_argument("--no_gam", default=0, type=int, 
-                    help="set to 1 to train only on base optimizer")
+parser.add_argument("--no_gam", default=False, type=bool, 
+                    help="set to true to train only on base optimizer")
 parser.add_argument("--gam_nonaccel", default=False, type=bool,
                     help='if set to true will run non-accelerated gam')
 parser.add_argument("--GNOM", default=False, type=bool,
                     help='if true will run gradient norm only minimization')
+parser.add_argument("--GNOM-noised", default=False, type=bool,
+                    help='if true will run gradient norm only minimization with noise')
+parser.add_argument("--noise-threshold", default=0.1, type=float,
+                    help='sets the gradient norm threshold to add noise')
+parser.add_argument("--noise-radius", default=0.01, type=float,
+                    help='sets the ball radius to add noise from')
+
 
 parser.add_argument("--grad_beta_0", default=1., type=float, help="scale for g0")
 parser.add_argument("--grad_beta_1", default=1., type=float, help="scale for g1")
@@ -173,7 +178,9 @@ def main():
         log_description = "GAMNonAccelerated"
     elif args.GNOM:
         log_description = "GNOM"
-    elif args.no_gam == 1:
+    elif args.GNOM_noised:
+        log_description = "GNOM_noised"
+    elif args.no_gam:
         log_description = "SGD"
     else: 
         log_description = 'GAM'
@@ -372,7 +379,7 @@ def main_worker(gpu, ngpus_per_node, args):
         model, args)
 
     # check if training only with base optimizer and overwrite the GAM optimizer
-    if args.no_gam == 1:
+    if args.no_gam:
         optimizer = base_optimizer
 
     start_time = time.time()
@@ -383,7 +390,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        if args.no_gam == 1:
+        if args.no_gam:
             train_epoch_base(model, train_loader, optimizer, gpu, args.print_freq)
         else:
             train_epoch_gam(model, train_loader, optimizer, gpu, args.print_freq)
