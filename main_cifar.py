@@ -466,6 +466,11 @@ def main_worker(gpu, ngpus_per_node, args):
         plot_path = os.path.join(current_file_dir, args.eigenvalue_path)
         get_esd_plot(density_eigen, density_weight, plot_path)
 
+        # Output noisy algorithm details (if applicable)
+        if args.GNOM_noised:
+            print("Noise Threshold:", args.noise_threshold)
+            print("Noise Radius:", args.noise_radius)
+
     # saving model to find gradient and hessian information (NOT NECESSARY)
     model_path = os.path.join(current_file_dir, args.model_saved_path)
     model_directory = os.path.dirname(model_path)

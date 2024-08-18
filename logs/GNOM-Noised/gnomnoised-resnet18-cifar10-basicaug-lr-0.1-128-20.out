@@ -164,3 +164,5 @@ Total training time: 3940.7475559711456 seconds
 Largest Hessian Eigenvalue: 0.1002
 Norm of the Gradient: 1.2418237329e-01
 Smallest Hessian Eigenvalue: -0.0116
+Noise Threshold: 0.1
+Noise Radius: 0.01
