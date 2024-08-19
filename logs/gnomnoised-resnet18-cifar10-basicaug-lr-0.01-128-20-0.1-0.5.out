@@ -1,0 +1,168 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py:223: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+model name space ['resnet101_c', 'resnet152_c', 'resnet18_c', 'resnet34_c', 'resnet50_c']
+Use GPU: 0 for training
+=> creating model 'resnet18_c'
+Files already downloaded and verified
+Files already downloaded and verified
+tensorboard dir ./results/CIFAR10/GNOM_noised/basicaug/lr-0.01/batchsize-128/2024-08-18-15:59:51
+Using Gradient-Norm Only Minimization with noise (GNOM_noised)
+/home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/autograd/graph.py:744: UserWarning: Using backward() with create_graph=True will create a reference cycle between the parameter and its gradient which can cause a memory leak. We recommend using autograd.grad when creating the graph to avoid this. If you have to use this function, make sure to reset the .grad fields of your parameters to None after use to break the cycle and avoid the leak. (Triggered internally at /home/coulombc/wheels_builder/tmp.2617/python-3.11/torch/torch/csrc/autograd/engine.cpp:1203.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Batch 100, Loss: 12705.0573
+Batch 200, Loss: 2153.0079
+Batch 300, Loss: 968.2160
+Noise applied in 0 out of 391 batches, 0.00
+Epoch 1 learning rate: 0.01
+Epoch 1 time: 134.42631578445435 seconds
+Epoch 1 accuracy: 14.52%
+Batch 100, Loss: 241.3872
+Batch 200, Loss: 165.0843
+Batch 300, Loss: 129.2447
+Noise applied in 0 out of 782 batches, 0.00
+Epoch 2 learning rate: 0.01
+Epoch 2 time: 119.71184849739075 seconds
+Epoch 2 accuracy: 12.39%
+Batch 100, Loss: 81.0282
+Batch 200, Loss: 67.3586
+Batch 300, Loss: 57.1133
+Noise applied in 0 out of 1173 batches, 0.00
+Epoch 3 learning rate: 0.01
+Epoch 3 time: 119.63634014129639 seconds
+Epoch 3 accuracy: 13.3%
+Batch 100, Loss: 45.3158
+Batch 200, Loss: 38.0925
+Batch 300, Loss: 35.6250
+Noise applied in 0 out of 1564 batches, 0.00
+Epoch 4 learning rate: 0.01
+Epoch 4 time: 119.69516277313232 seconds
+Epoch 4 accuracy: 13.59%
+Batch 100, Loss: 30.5161
+Batch 200, Loss: 27.1987
+Batch 300, Loss: 25.9186
+Noise applied in 0 out of 1955 batches, 0.00
+Epoch 5 learning rate: 0.01
+Epoch 5 time: 119.65038752555847 seconds
+Epoch 5 accuracy: 13.71%
+Batch 100, Loss: 23.7324
+Batch 200, Loss: 21.5910
+Batch 300, Loss: 21.0799
+Noise applied in 0 out of 2346 batches, 0.00
+Epoch 6 learning rate: 0.01
+Epoch 6 time: 119.63310027122498 seconds
+Epoch 6 accuracy: 14.0%
+Batch 100, Loss: 18.6641
+Batch 200, Loss: 18.6086
+Batch 300, Loss: 16.9202
+Noise applied in 0 out of 2737 batches, 0.00
+Epoch 7 learning rate: 0.01
+Epoch 7 time: 119.57075309753418 seconds
+Epoch 7 accuracy: 14.7%
+Batch 100, Loss: 16.4055
+Batch 200, Loss: 14.9239
+Batch 300, Loss: 14.9570
+Noise applied in 0 out of 3128 batches, 0.00
+Epoch 8 learning rate: 0.01
+Epoch 8 time: 119.66865873336792 seconds
+Epoch 8 accuracy: 14.54%
+Batch 100, Loss: 13.7780
+Batch 200, Loss: 13.7377
+Batch 300, Loss: 12.4583
+Noise applied in 0 out of 3519 batches, 0.00
+Epoch 9 learning rate: 0.01
+Epoch 9 time: 119.57387638092041 seconds
+Epoch 9 accuracy: 14.39%
+Batch 100, Loss: 12.6662
+Batch 200, Loss: 11.9882
+Batch 300, Loss: 11.4633
+Noise applied in 0 out of 3910 batches, 0.00
+Epoch 10 learning rate: 0.01
+Epoch 10 time: 119.58820986747742 seconds
+Epoch 10 accuracy: 14.22%
+Batch 100, Loss: 10.9824
+Batch 200, Loss: 11.2279
+Batch 300, Loss: 10.3663
+Noise applied in 0 out of 4301 batches, 0.00
+Epoch 11 learning rate: 0.01
+Epoch 11 time: 119.5820243358612 seconds
+Epoch 11 accuracy: 14.4%
+Batch 100, Loss: 10.6068
+Batch 200, Loss: 9.9110
+Batch 300, Loss: 9.3387
+Noise applied in 0 out of 4692 batches, 0.00
+Epoch 12 learning rate: 0.01
+Epoch 12 time: 119.51516532897949 seconds
+Epoch 12 accuracy: 14.58%
+Batch 100, Loss: 8.9241
+Batch 200, Loss: 8.8269
+Batch 300, Loss: 8.7136
+Noise applied in 0 out of 5083 batches, 0.00
+Epoch 13 learning rate: 0.01
+Epoch 13 time: 119.54405999183655 seconds
+Epoch 13 accuracy: 13.97%
+Batch 100, Loss: 8.2237
+Batch 200, Loss: 8.0227
+Batch 300, Loss: 7.9641
+Noise applied in 0 out of 5474 batches, 0.00
+Epoch 14 learning rate: 0.01
+Epoch 14 time: 119.53505635261536 seconds
+Epoch 14 accuracy: 14.04%
+Batch 100, Loss: 7.4668
+Batch 200, Loss: 7.4521
+Batch 300, Loss: 7.0537
+Noise applied in 0 out of 5865 batches, 0.00
+Epoch 15 learning rate: 0.01
+Epoch 15 time: 119.51151990890503 seconds
+Epoch 15 accuracy: 13.65%
+Batch 100, Loss: 6.6692
+Batch 200, Loss: 6.5176
+Batch 300, Loss: 6.6131
+Noise applied in 0 out of 6256 batches, 0.00
+Epoch 16 learning rate: 0.01
+Epoch 16 time: 119.48928952217102 seconds
+Epoch 16 accuracy: 13.75%
+Batch 100, Loss: 6.1948
+Batch 200, Loss: 6.1157
+Batch 300, Loss: 5.6869
+Noise applied in 0 out of 6647 batches, 0.00
+Epoch 17 learning rate: 0.01
+Epoch 17 time: 119.49990677833557 seconds
+Epoch 17 accuracy: 13.44%
+Batch 100, Loss: 5.4625
+Batch 200, Loss: 5.0881
+Batch 300, Loss: 4.8802
+Noise applied in 0 out of 7038 batches, 0.00
+Epoch 18 learning rate: 0.01
+Epoch 18 time: 119.51735258102417 seconds
+Epoch 18 accuracy: 13.35%
+Batch 100, Loss: 4.7283
+Batch 200, Loss: 4.5830
+Batch 300, Loss: 4.4683
+Noise applied in 0 out of 7429 batches, 0.00
+Epoch 19 learning rate: 0.01
+Epoch 19 time: 119.53688621520996 seconds
+Epoch 19 accuracy: 12.86%
+Batch 100, Loss: 4.2200
+Batch 200, Loss: 4.0803
+Batch 300, Loss: 4.0067
+Noise applied in 0 out of 7820 batches, 0.00
+Epoch 20 learning rate: 0.01
+Epoch 20 time: 119.52097749710083 seconds
+Epoch 20 accuracy: 12.62%
+rho:  0.04 , alpha:  0.3
+Total training time: 2406.424368619919 seconds
+/project/6070520/tkleinkn/Vanilla-GAM/utils/density_plot.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  density_output[i, j] = np.sum(tmp_result * weights[i, :])
+Largest Hessian Eigenvalue: 1.2759
+Norm of the Gradient: 6.2909555435e-01
+Smallest Hessian Eigenvalue: -0.0431
+Noise Threshold: 0.1
+Noise Radius: 0.5
