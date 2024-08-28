@@ -53,3 +53,17 @@ print(f"Noise applied in {noise_count} out of {optimizer.total_batches} batches 
 for param in model.parameters():
     print(f"Updated parameter: {param.data}")
 
+'''
+if args.GNOM_noised:
+            # Get all indices of the train dataset
+            all_indices = np.arange(len(train_dataset))
+
+            # Randomly select `grad_approx_size` samples
+            np.random.shuffle(all_indices)
+            grad_approx_indices = all_indices[:args.grad_approx_size]
+            remaining_indices = all_indices[args.grad_approx_size:]
+
+            # Create the grad_approx_dataset with only basic transformations
+            grad_approx_dataset = torch.utils.data.Subset(train_dataset, grad_approx_indices)
+            train_dataset = torch.utils.data.Subset(train_dataset, remaining_indices)
+'''

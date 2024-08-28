@@ -20,7 +20,7 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.tensorboard import SummaryWriter
-from utils.train_utils_gam import train_epoch_gam, evaluate_model, train_epoch_base
+from utils.train_utils_gam import train_epoch_gam, evaluate_model, train_epoch_base, train_epoch_noised
 from utils.optimizer_helper import get_optim_and_schedulers
 from utils.cutout import Cutout
 from utils.auto_augment import CIFAR10Policy
@@ -115,6 +115,8 @@ parser.add_argument("--noise-threshold", default=0.1, type=float,
                     help='sets the gradient norm threshold to add noise')
 parser.add_argument("--noise-radius", default=0.01, type=float,
                     help='sets the ball radius to add noise from')
+parser.add_argument("--grad-approx-samples", default=1024, type=int,
+                    help='sets number of samples to approx gradient')
 
 
 parser.add_argument("--grad_beta_0", default=1., type=float, help="scale for g0")
@@ -352,6 +354,47 @@ def main_worker(gpu, ngpus_per_node, args):
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761])
             ]))
+    
+    # if we are doing gnom noised, taking n samples with no transforms and putting in their own set
+    grad_approx_loader = None
+    if args.GNOM_noised:
+        if args.dataset == 'CIFAR10':
+            train_dataset2 = datasets.CIFAR10(
+                root=data_root,
+                train=True,
+                download=True,
+                transform=transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.49139968, 0.48215827, 0.44653124], std=[0.2023, 0.1994, 0.2010])
+                ]))
+        else:
+            train_dataset2 = datasets.CIFAR100(
+                root=data_root,
+                train=True,
+                download=True,
+                transform=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761])
+            ]))
+
+        # Get all indices of the train dataset
+            all_indices = np.arange(len(train_dataset2))
+
+            # Randomly select `grad_approx_samples` samples
+            np.random.shuffle(all_indices)
+            grad_approx_indices = all_indices[:args.grad_approx_samples]
+            remaining_indices = all_indices[args.grad_approx_samples:]
+
+            # Create the grad_approx_dataset with only basic transformations
+            grad_approx_dataset = torch.utils.data.Subset(train_dataset2, grad_approx_indices)
+
+            grad_approx_loader = torch.utils.data.DataLoader(
+                grad_approx_dataset,
+                batch_size=args.batch_size, shuffle=False,
+                num_workers=args.workers, pin_memory=True)
+
+            # GET RID OF THIS TO INCLUDE GRAD APPROX SAMPLES IN TRAIN DATASET
+            train_dataset = torch.utils.data.Subset(train_dataset, remaining_indices)
 
     if args.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
@@ -392,6 +435,8 @@ def main_worker(gpu, ngpus_per_node, args):
             train_sampler.set_epoch(epoch)
         if args.no_gam:
             train_epoch_base(model, train_loader, optimizer, gpu, args.print_freq)
+        elif args.GNOM_noised:
+            train_epoch_noised(model, train_loader, grad_approx_loader, int(args.grad_approx_samples / args.batch_size), optimizer, gpu, args)
         else:
             train_epoch_gam(model, train_loader, optimizer, gpu, args)
 

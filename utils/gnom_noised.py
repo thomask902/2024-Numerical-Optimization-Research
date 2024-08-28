@@ -49,7 +49,24 @@ class GNOM_noised(torch.optim.Optimizer):
         else:
             raise ValueError('"grad_reduce" should be one of ["mean", "sum"].')
 
+    def accum_grad(self, loss_fn, inputs, targets, accum_steps, **kwargs):
+            outputs = self.model(inputs)
+            loss = loss_fn(outputs, targets, **kwargs)
+            loss /= accum_steps
+            loss.backward(create_graph = False)
+        
+
+    def noise(self):
+        # calculate gradient norm to determine if noise needs to be added
+        grad_norm = self.grad_norm()
+
+        # check if norm exceeds threshold, if not add noise
+        if grad_norm < self.noise_threshold:
+            self.noise_applied_count += 1
+            self.perturb_weights()
+
     # calculates the norm of the gradient
+    @torch.no_grad()
     def grad_norm(self):
         # Compute gradient vector
         grad_vec = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
@@ -99,6 +116,7 @@ class GNOM_noised(torch.optim.Optimizer):
         return hessian_vec_prod
 
     # performs scaled combination of calculated gradients and sets p.grad values to new gradient
+    @torch.no_grad()
     def set_gradients(self, g):
         # Set the gradients manually for optimizer step
         start_idx = 0
