@@ -355,6 +355,9 @@ def main_worker(gpu, ngpus_per_node, args):
                 transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761])
             ]))
     
+    if args.gpu == -1:
+        args.workers = 1
+
     # if we are doing gnom noised, taking n samples with no transforms and putting in their own set
     grad_approx_loader = None
     if args.GNOM_noised:
@@ -378,31 +381,31 @@ def main_worker(gpu, ngpus_per_node, args):
             ]))
 
         # Get all indices of the train dataset
-            all_indices = np.arange(len(train_dataset2))
+        all_indices = np.arange(len(train_dataset2))
 
-            # Randomly select `grad_approx_samples` samples
-            np.random.shuffle(all_indices)
-            grad_approx_indices = all_indices[:args.grad_approx_samples]
-            remaining_indices = all_indices[args.grad_approx_samples:]
+        # Randomly select `grad_approx_samples` samples
+        np.random.shuffle(all_indices)
+        grad_approx_indices = all_indices[:args.grad_approx_samples]
+        remaining_indices = all_indices[args.grad_approx_samples:]
 
-            # Create the grad_approx_dataset with only basic transformations
-            grad_approx_dataset = torch.utils.data.Subset(train_dataset2, grad_approx_indices)
+        # Create the grad_approx_dataset with only basic transformations
+        grad_approx_dataset = torch.utils.data.Subset(train_dataset2, grad_approx_indices)
 
-            grad_approx_loader = torch.utils.data.DataLoader(
-                grad_approx_dataset,
-                batch_size=args.batch_size, shuffle=False,
-                num_workers=args.workers, pin_memory=True)
+        print("Gradient Approximation Dataset: ", len(grad_approx_dataset))
 
-            # GET RID OF THIS TO INCLUDE GRAD APPROX SAMPLES IN TRAIN DATASET
-            train_dataset = torch.utils.data.Subset(train_dataset, remaining_indices)
+        grad_approx_loader = torch.utils.data.DataLoader(
+            grad_approx_dataset,
+            batch_size=args.batch_size, shuffle=False,
+            num_workers=args.workers, pin_memory=True)
+
+        # GET RID OF THIS TO INCLUDE GRAD APPROX SAMPLES IN TRAIN DATASET
+        train_dataset = torch.utils.data.Subset(train_dataset, remaining_indices)
+        print("Train Dataset: ", len(train_dataset))
 
     if args.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
     else:
         train_sampler = None
-
-    if args.gpu == -1:
-        args.workers = 1
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
@@ -433,9 +436,12 @@ def main_worker(gpu, ngpus_per_node, args):
 
         if args.distributed:
             train_sampler.set_epoch(epoch)
+            
         if args.no_gam:
             train_epoch_base(model, train_loader, optimizer, gpu, args.print_freq)
         elif args.GNOM_noised:
+            print("Gradient Approximation Samples: ", args.grad_approx_samples)
+            print("Number of Gradient Approximation Accumulation Batches: ", int(args.grad_approx_samples / args.batch_size))
             train_epoch_noised(model, train_loader, grad_approx_loader, int(args.grad_approx_samples / args.batch_size), optimizer, gpu, args)
         else:
             train_epoch_gam(model, train_loader, optimizer, gpu, args)

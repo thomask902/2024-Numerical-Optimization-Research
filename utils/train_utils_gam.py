@@ -96,6 +96,8 @@ def train_epoch_noised(model, trainloader, gradloader, accum_steps, optimizer, g
     print(f"Noise applied in {noise_count} out of {optimizer.total_batches} batches, "
         f"{percentage_noise:.2f}")
 
+    optimizer.reset_counters()
+
     # error catching if no loss value
     if torch.isnan(loss).any():
         raise SystemExit('NaN！')
