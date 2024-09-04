@@ -391,7 +391,7 @@ def main_worker(gpu, ngpus_per_node, args):
         # Create the grad_approx_dataset with only basic transformations
         grad_approx_dataset = torch.utils.data.Subset(train_dataset2, grad_approx_indices)
 
-        print("Gradient Approximation Dataset: ", len(grad_approx_dataset))
+        print("Gradient Approximation Dataset:", len(grad_approx_dataset))
 
         grad_approx_loader = torch.utils.data.DataLoader(
             grad_approx_dataset,
@@ -400,7 +400,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
         # GET RID OF THIS TO INCLUDE GRAD APPROX SAMPLES IN TRAIN DATASET
         train_dataset = torch.utils.data.Subset(train_dataset, remaining_indices)
-        print("Train Dataset: ", len(train_dataset))
+        print("Train Dataset:", len(train_dataset))
 
     if args.distributed:
         train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
@@ -440,8 +440,8 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.no_gam:
             train_epoch_base(model, train_loader, optimizer, gpu, args.print_freq)
         elif args.GNOM_noised:
-            print("Gradient Approximation Samples: ", args.grad_approx_samples)
-            print("Number of Gradient Approximation Accumulation Batches: ", int(args.grad_approx_samples / args.batch_size))
+            print("Gradient Approximation Samples:", args.grad_approx_samples)
+            print("Number of Gradient Approximation Accumulation Batches:", int(args.grad_approx_samples / args.batch_size))
             train_epoch_noised(model, train_loader, grad_approx_loader, int(args.grad_approx_samples / args.batch_size), optimizer, gpu, args)
         else:
             train_epoch_gam(model, train_loader, optimizer, gpu, args)
