@@ -1,0 +1,229 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+/project/6070520/tkleinkn/Vanilla-GAM/main_cifar.py:225: UserWarning: You have chosen a specific GPU. This will completely disable data parallelism.
+  warnings.warn('You have chosen a specific GPU. This will completely '
+model name space ['resnet101_c', 'resnet152_c', 'resnet18_c', 'resnet34_c', 'resnet50_c']
+Use GPU: 0 for training
+=> creating model 'resnet18_c'
+Files already downloaded and verified
+Files already downloaded and verified
+Files already downloaded and verified
+Gradient Approximation Dataset:  1024
+Train Dataset:  48976
+tensorboard dir ./results/CIFAR10/GNOM_noised/basicaug/lr-0.01/batchsize-256/2024-09-04-10:48:37
+Using Gradient-Norm Only Minimization with noise (GNOM_noised)
+Gradient Approximation Samples:  1024
+Number of Gradient Approximation Accumulation Batches:  4
+/home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/autograd/graph.py:744: UserWarning: Using backward() with create_graph=True will create a reference cycle between the parameter and its gradient which can cause a memory leak. We recommend using autograd.grad when creating the graph to avoid this. If you have to use this function, make sure to reset the .grad fields of your parameters to None after use to break the cycle and avoid the leak. (Triggered internally at /home/coulombc/wheels_builder/tmp.2617/python-3.11/torch/torch/csrc/autograd/engine.cpp:1203.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Batch 1, Loss: 1.9899
+Batch 2, Loss: 5.5050
+Batch 3, Loss: 27.9300
+Batch 4, Loss: 47.0767
+Batch 5, Loss: 48.5228
+Batch 6, Loss: 66.6309
+Batch 7, Loss: 88.3123
+Batch 8, Loss: 105.4413
+Batch 9, Loss: 117.9876
+Batch 10, Loss: 126.8958
+Batch 11, Loss: 132.9370
+Batch 12, Loss: 136.6629
+Batch 13, Loss: 138.2443
+Batch 14, Loss: 137.9592
+Batch 15, Loss: 136.2259
+Batch 16, Loss: 133.3391
+Batch 17, Loss: 129.4918
+Batch 18, Loss: 124.8866
+Batch 19, Loss: 119.7575
+Batch 20, Loss: 114.2773
+Batch 21, Loss: 108.5943
+Batch 22, Loss: 102.8343
+Batch 23, Loss: 97.0908
+Batch 24, Loss: 91.6648
+Batch 25, Loss: 86.8399
+Batch 26, Loss: 81.8517
+Batch 27, Loss: 77.0696
+Batch 28, Loss: 72.8838
+Batch 29, Loss: 68.9245
+Batch 30, Loss: 65.1222
+Batch 31, Loss: 61.4844
+Batch 32, Loss: 58.0190
+Batch 33, Loss: 54.7286
+Batch 34, Loss: 51.6131
+Batch 35, Loss: 48.6731
+Batch 36, Loss: 45.9134
+Batch 37, Loss: 43.3555
+Batch 38, Loss: 41.0296
+Batch 39, Loss: 38.9080
+Batch 40, Loss: 36.9113
+Batch 41, Loss: 35.0071
+Batch 42, Loss: 33.2235
+Batch 43, Loss: 31.5880
+Batch 44, Loss: 30.0912
+Batch 45, Loss: 28.7121
+Batch 46, Loss: 27.4395
+Batch 47, Loss: 26.2696
+Batch 48, Loss: 25.1963
+Batch 49, Loss: 24.2193
+Batch 50, Loss: 23.4007
+Batch 51, Loss: 22.7828
+Batch 52, Loss: 22.1007
+Batch 53, Loss: 21.3597
+Batch 54, Loss: 20.7928
+Batch 55, Loss: 20.4319
+Batch 56, Loss: 20.0798
+Batch 57, Loss: 19.7533
+Batch 58, Loss: 19.4395
+Batch 59, Loss: 19.1297
+Batch 60, Loss: 18.8163
+Batch 61, Loss: 18.4974
+Batch 62, Loss: 18.1773
+Batch 63, Loss: 17.8638
+Batch 64, Loss: 17.5627
+Batch 65, Loss: 17.2754
+Batch 66, Loss: 16.9984
+Batch 67, Loss: 16.7278
+Batch 68, Loss: 16.4599
+Batch 69, Loss: 16.1924
+Batch 70, Loss: 15.9245
+Batch 71, Loss: 15.6585
+Batch 72, Loss: 15.3976
+Batch 73, Loss: 15.1439
+Batch 74, Loss: 14.8982
+Batch 75, Loss: 14.6600
+Batch 76, Loss: 14.4284
+Batch 77, Loss: 14.2023
+Batch 78, Loss: 13.9808
+Batch 79, Loss: 13.7638
+Batch 80, Loss: 13.5518
+Batch 81, Loss: 13.3461
+Batch 82, Loss: 13.1490
+Batch 83, Loss: 12.9627
+Batch 84, Loss: 12.7886
+Batch 85, Loss: 12.6268
+Batch 86, Loss: 12.4781
+Batch 87, Loss: 12.3432
+Batch 88, Loss: 12.2203
+Batch 89, Loss: 12.1061
+Batch 90, Loss: 11.9985
+Batch 91, Loss: 11.9000
+Batch 92, Loss: 11.8032
+Batch 93, Loss: 11.7047
+Batch 94, Loss: 11.6048
+Batch 95, Loss: 11.5054
+Batch 96, Loss: 11.4077
+Batch 97, Loss: 11.3121
+Batch 98, Loss: 11.2190
+Batch 99, Loss: 11.1294
+Batch 100, Loss: 11.0451
+Batch 101, Loss: 10.9688
+Batch 102, Loss: 10.8934
+Batch 103, Loss: 10.8203
+Batch 104, Loss: 10.7524
+Batch 105, Loss: 10.6863
+Batch 106, Loss: 10.6208
+Batch 107, Loss: 10.5554
+Batch 108, Loss: 10.4902
+Batch 109, Loss: 10.4258
+Batch 110, Loss: 10.3625
+Batch 111, Loss: 10.3011
+Batch 112, Loss: 10.2413
+Batch 113, Loss: 10.1818
+Batch 114, Loss: 10.1239
+Batch 115, Loss: 10.0680
+Batch 116, Loss: 10.0137
+Batch 117, Loss: 9.9603
+Batch 118, Loss: 9.9079
+Batch 119, Loss: 9.8569
+Batch 120, Loss: 9.8074
+Batch 121, Loss: 9.7587
+Batch 122, Loss: 9.7104
+Batch 123, Loss: 9.6630
+Batch 124, Loss: 9.6165
+Batch 125, Loss: 9.5705
+Batch 126, Loss: 9.5251
+Batch 127, Loss: 9.4803
+Batch 128, Loss: 9.4365
+Batch 129, Loss: 9.3936
+Batch 130, Loss: 9.3515
+Batch 131, Loss: 9.3102
+Batch 132, Loss: 9.2698
+Batch 133, Loss: 9.2303
+Batch 134, Loss: 9.1916
+Batch 135, Loss: 9.1536
+Batch 136, Loss: 9.1163
+Batch 137, Loss: 9.0798
+Batch 138, Loss: 9.0440
+Batch 139, Loss: 9.0089
+Batch 140, Loss: 8.9743
+Batch 141, Loss: 8.9404
+Batch 142, Loss: 8.9070
+Batch 143, Loss: 8.8742
+Batch 144, Loss: 8.8418
+Batch 145, Loss: 8.8100
+Batch 146, Loss: 8.7785
+Batch 147, Loss: 8.7474
+Batch 148, Loss: 8.7166
+Batch 149, Loss: 8.6862
+Batch 150, Loss: 8.6561
+Batch 151, Loss: 8.6262
+Batch 152, Loss: 8.5966
+Batch 153, Loss: 8.5673
+Batch 154, Loss: 8.5383
+Batch 155, Loss: 8.5096
+Batch 156, Loss: 8.4811
+Batch 157, Loss: 8.4530
+Batch 158, Loss: 8.4251
+Batch 159, Loss: 8.3976
+Batch 160, Loss: 8.3703
+Batch 161, Loss: 8.3433
+Batch 162, Loss: 8.3165
+Batch 163, Loss: 8.2900
+Batch 164, Loss: 8.2638
+Batch 165, Loss: 8.2378
+Batch 166, Loss: 8.2120
+Batch 167, Loss: 8.1865
+Batch 168, Loss: 8.1612
+Batch 169, Loss: 8.1360
+Batch 170, Loss: 8.1111
+Batch 171, Loss: 8.0864
+Batch 172, Loss: 8.0619
+Batch 173, Loss: 8.0377
+Batch 174, Loss: 8.0136
+Batch 175, Loss: 7.9896
+Batch 176, Loss: 7.9659
+Batch 177, Loss: 7.9424
+Batch 178, Loss: 7.9190
+Batch 179, Loss: 7.8959
+Batch 180, Loss: 7.8729
+Batch 181, Loss: 7.8501
+Batch 182, Loss: 7.8275
+Batch 183, Loss: 7.8051
+Batch 184, Loss: 7.7829
+Batch 185, Loss: 7.7609
+Batch 186, Loss: 7.7390
+Batch 187, Loss: 7.7173
+Batch 188, Loss: 7.6957
+Batch 189, Loss: 7.6744
+Batch 190, Loss: 7.6532
+Batch 191, Loss: 7.6321
+Batch 192, Loss: 7.6113
+Noise applied in 0 out of 192 batches, 0.00
+Epoch 1 learning rate: 0.01
+Epoch 1 time: 284.5412073135376 seconds
+Epoch 1 accuracy: 9.94%
+rho:  0.04 , alpha:  0.3
+Total training time: 284.5428924560547 seconds
+/project/6070520/tkleinkn/Vanilla-GAM/utils/density_plot.py:68: ComplexWarning: Casting complex values to real discards the imaginary part
+  density_output[i, j] = np.sum(tmp_result * weights[i, :])
+Largest Hessian Eigenvalue: 4.7062
+Norm of the Gradient: 3.3401966095e+00
+Smallest Hessian Eigenvalue: -0.5637
+Noise Threshold: 0.5
+Noise Radius: 0.1
