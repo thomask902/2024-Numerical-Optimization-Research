@@ -429,6 +429,11 @@ def main_worker(gpu, ngpus_per_node, args):
         optimizer = base_optimizer
 
     start_time = time.time()
+
+    if args.GNOM_noised:
+        print("Gradient Approximation Samples:", args.grad_approx_samples)
+        print("Number of Gradient Approximation Accumulation Batches:", int(args.grad_approx_samples / args.batch_size))
+
     # pass returned optimizers and schedulers into training loop
     for epoch in range(args.epochs):
 
@@ -440,8 +445,6 @@ def main_worker(gpu, ngpus_per_node, args):
         if args.no_gam:
             train_epoch_base(model, train_loader, optimizer, gpu, args.print_freq)
         elif args.GNOM_noised:
-            print("Gradient Approximation Samples:", args.grad_approx_samples)
-            print("Number of Gradient Approximation Accumulation Batches:", int(args.grad_approx_samples / args.batch_size))
             train_epoch_noised(model, train_loader, grad_approx_loader, int(args.grad_approx_samples / args.batch_size), optimizer, gpu, args)
         else:
             train_epoch_gam(model, train_loader, optimizer, gpu, args)

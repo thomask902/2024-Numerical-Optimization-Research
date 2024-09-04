@@ -59,11 +59,11 @@ class GNOM_noised(torch.optim.Optimizer):
     def noise(self):
         # calculate gradient norm to determine if noise needs to be added
         grad_norm = self.grad_norm()
-        print("Accumulated Gradient Norm:", grad_norm, ", Threshold:", self.noise_threshold)
+        # print("Accumulated Gradient Norm:", grad_norm, ", Threshold:", self.noise_threshold)
 
         # check if norm exceeds threshold, if not add noise
         if grad_norm < self.noise_threshold:
-            print("Applying noise")
+            # print("Applying noise")
             self.noise_applied_count += 1
             self.perturb_weights()
 
