@@ -1,0 +1,6 @@
+/local/var/spool/slurmd/job24632686/slurm_script: line 17: /cvmfs/soft.computecanada.ca/custom/software/lmod/lmod/libexec/lmod: No such file or directory
+/local/var/spool/slurmd/job24632686/slurm_script: line 17: /cvmfs/soft.computecanada.ca/custom/software/lmod/lmod/libexec/lmod: No such file or directory
+  File "main_cifar.py", line 455
+    print(f"Epoch {epoch + 1} learning rate: {current_lr}")
+                                                         ^
+SyntaxError: invalid syntax
