@@ -79,10 +79,10 @@ def train_epoch_noised(model, trainloader, gradloader, accum_steps, optimizer, g
             target = data[1].cuda(gpu, non_blocking=True)
         
         # calls set_closure from optimizer to set up GAM with information
-        optimizer.set_closure(loss_fn, images, target)
+        predictions, loss = optimizer.set_closure(loss_fn, images, target)
 
         # calls step() from GAM to use info from closure to run steps
-        predictions, loss = optimizer.step()
+        optimizer.step()
 
         # zeros gradients to clear them for next batch so they don't add up
         optimizer.zero_grad()
@@ -96,7 +96,7 @@ def train_epoch_noised(model, trainloader, gradloader, accum_steps, optimizer, g
     print(f"Noise applied in {noise_count} out of {optimizer.total_batches} batches, "
         f"{percentage_noise:.2f}")
 
-    optimizer.reset_counters()
+    # optimizer.reset_counters()
 
     # error catching if no loss value
     if torch.isnan(loss).any():

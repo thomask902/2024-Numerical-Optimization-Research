@@ -177,6 +177,7 @@ class GNOM_noised(torch.optim.Optimizer):
         with self.maybe_no_sync():
             self.total_batches += 1
 
+            ''' REMOVED AS GRADIENT IS BEING CHECKED BY FIXED DATASET ALREADY
             # calculate oracle loss gradient/gradient at original weights
             outputs, loss_value = get_grad()
 
@@ -189,6 +190,7 @@ class GNOM_noised(torch.optim.Optimizer):
                 self.perturb_weights()
                 # calculate oracle loss gradient/gradient at new weights
                 outputs, loss_value = get_grad()
+            '''
 
             # calculate g (gradient of gradient norm squared, g = hessian@w * grad@w)
             g = self.grad_norm_grad()
@@ -205,8 +207,6 @@ class GNOM_noised(torch.optim.Optimizer):
 
         # update with new directions
         self.base_optimizer.step()
-
-        return outputs, loss_value
 
     def zero_grad(self, set_to_none: bool = False):
         self.base_optimizer.zero_grad(set_to_none)
