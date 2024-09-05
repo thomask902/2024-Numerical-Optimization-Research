@@ -79,10 +79,10 @@ def train_epoch_noised(model, trainloader, gradloader, accum_steps, optimizer, g
             target = data[1].cuda(gpu, non_blocking=True)
         
         # calls set_closure from optimizer to set up GAM with information
-        predictions, loss = optimizer.set_closure(loss_fn, images, target)
+        optimizer.set_closure(loss_fn, images, target)
 
         # calls step() from GAM to use info from closure to run steps
-        optimizer.step()
+        predictions, loss = optimizer.step()
 
         # zeros gradients to clear them for next batch so they don't add up
         optimizer.zero_grad()
