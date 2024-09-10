@@ -46,12 +46,16 @@ class newtonMR(torch.optim.Optimizer):
     # calculates hessian of the loss function
     def hessian(self, grads):
 
-        hessian = torch.zeros(grads.shape[0], grads.shape[0])
-        
-        for idx, grad in enumerate(grads):
-            second_der = torch.autograd.grad(grad, self.model.parameters(), retain_graph=True, allow_unused=True)
-            second_der = torch.cat(([grad.flatten() for grad in second_der]))
-            hessian[idx, :] = second_der
+        hessian = []
+
+        for grad_i in grads:
+            hessian_row = []
+            for param in self.model.parameters():
+                grad2_ij = torch.autograd.grad(grad_i, param, retain_graph=True, create_graph=True)
+                hessian_row.append(grad2_ij[0].view(-1).detach())  # Only take the first gradient (w.r.t param)
+            hessian.append(torch.cat(hessian_row))
+            
+        hessian = torch.stack(hessian)
         
         return hessian
 
