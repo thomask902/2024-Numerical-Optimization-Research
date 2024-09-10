@@ -7,6 +7,7 @@ from .gam import GAM
 from .gam_nonaccel import GAM_nonaccel
 from .gnom import GNOM
 from .gnom_noised import GNOM_noised
+from .newton_mr import newtonMR
 
 def get_optim_and_schedulers(model, args):
     if args.base_opt == 'SGD':
@@ -48,6 +49,10 @@ def get_optim_and_schedulers(model, args):
     elif args.GNOM_noised:
         print("Using Gradient-Norm Only Minimization with noise (GNOM_noised)")
         optimizer = GNOM_noised(params=model.parameters(), base_optimizer=base_optimizer, model=model,
+                        adaptive=args.adaptive, args=args)
+    elif args.newtonMR:
+        print("Using Newton\'s Minimum Residual Algorithm (newtonMR)")
+        optimizer = newtonMR(params=model.parameters(), base_optimizer=base_optimizer, model=model,
                         adaptive=args.adaptive, args=args)
     else:
         optimizer = GAM(params=model.parameters(), base_optimizer=base_optimizer, model=model,

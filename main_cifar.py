@@ -1,3 +1,6 @@
+# TO RUN:
+# python3 main_cifar.py --batch-size 32 --gpu -1 --epochs 1
+
 import argparse
 from datetime import datetime
 import os
@@ -117,6 +120,8 @@ parser.add_argument("--noise-radius", default=0.01, type=float,
                     help='sets the ball radius to add noise from')
 parser.add_argument("--grad-approx-samples", default=1024, type=int,
                     help='sets number of samples to approx gradient')
+parser.add_argument("--newtonMR", default=False, type=bool,
+                    help='if true will run newtons MR minimization')
 
 
 parser.add_argument("--grad_beta_0", default=1., type=float, help="scale for g0")
@@ -184,6 +189,8 @@ def main():
         log_description = "GNOM_noised"
     elif args.no_gam:
         log_description = "SGD"
+    elif args.newtonMR:
+        log_description = "newtonMR"
     else: 
         log_description = 'GAM'
 
