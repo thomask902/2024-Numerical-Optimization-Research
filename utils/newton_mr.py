@@ -48,13 +48,14 @@ class newtonMR(torch.optim.Optimizer):
 
         hessian = []
 
-        for grad_i in grads:
+        for idx, grad_i in enumerate(grads):
+            print("Gradient Term", idx) 
             hessian_row = []
             for param in self.model.parameters():
                 grad2_ij = torch.autograd.grad(grad_i, param, retain_graph=True, create_graph=True)
                 hessian_row.append(grad2_ij[0].view(-1).detach())  # Only take the first gradient (w.r.t param)
             hessian.append(torch.cat(hessian_row))
-            
+
         hessian = torch.stack(hessian)
         
         return hessian
