@@ -37,7 +37,7 @@ def main():
     # setting output location
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     learning_rate = "lr-" + str(args.lr)
-    log_path = os.path.join(args.log_base, "wine", args.optimizer, learning_rate, str(timestamp), "results.csv")
+    log_path = os.path.join(args.log_base, "wine", args.optimizer, args.epochs, learning_rate, str(timestamp), "results.csv")
     log_directory = os.path.dirname(log_path)
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
