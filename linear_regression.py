@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from utils.gnom import GNOM
 import argparse
+import os
+from datetime import datetime
 
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Linear Regression Training with GNOM')
@@ -32,6 +34,14 @@ class linearRegression(nn.Module):
 def main():
 
     args = parser.parse_args()
+
+    # setting output location
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    learning_rate = "lr-" + str(args.lr)
+    log_path = os.path.join(args.log_base, "wine", args.optimizer, learning_rate, str(timestamp), "results.csv")
+    log_directory = os.path.dirname(log_path)
+    if not os.path.exists(log_directory):
+        os.makedirs(log_directory)
 
     # importing the dataset
     wine_quality = fetch_ucirepo(id=186) 
@@ -87,9 +97,15 @@ def main():
     # training
     print(f"Training with {args.optimizer}") # this will be in name of output file
 
-    test_accuracy = []
+    # List to hold stats for each epoch
+    epoch_stats = []
 
     for epoch in range(epochs):
+        train_loss = 0.0
+        train_grad_norm = 0.0
+        train_time = 0.0
+        test_loss = 0.0
+
         # train model for epoch
         if args.optimizer == "GD":
             train_loss, train_grad_norm, train_time = train_epoch_base(model, optimizer, train_loader, device, criterion)
@@ -98,9 +114,22 @@ def main():
 
         # evaluate model after training
         test_loss, test_grad_norm = evaluate(model, test_loader, criterion, device)
+
+        epoch_stats.append({
+            "Epoch": epoch + 1,
+            "Training Loss": train_loss,
+            "Gradient Norm": train_grad_norm,
+            "Training Time (s)": train_time,
+            "Test Loss": test_loss
+        })
         
         # output epoch results
-        print(f'Epoch {epoch+1}, Training Loss: {train_loss}, Training Time (s): {train_time}, Train Gradient Norm: {train_grad_norm}, Test Loss: {test_loss}')
+        # print(f'Epoch {epoch+1}, Training Loss: {train_loss}, Training Time (s): {train_time}, Training Gradient Norm: {train_grad_norm}, Test Loss: {test_loss}')
+    
+    # print and save results of run
+    df_stats = pd.DataFrame(epoch_stats)
+    df_stats.to_csv(log_path, index=False)
+    print(df_stats)
 
 def train_epoch_closure(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
@@ -153,11 +182,7 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
         loss.backward()
 
         # calculating gradient norm
-        grad_norm = 0
-        for p in model.parameters():
-            if p.grad is not None:
-                grad_norm += p.grad.norm(2).item() ** 2
-        grad_norm = grad_norm ** 0.5  # Take the square root of the sum of squares
+        grad_norm = get_grad_norm(model)
         total_grad_norm += grad_norm
 
         optimizer.step()
@@ -188,15 +213,16 @@ def evaluate(model, test_loader, criterion, device):
     
     return test_loss, grad_norm
 
-# from PyHessian
-def get_gradient_norm(self):
+
+def get_grad_norm(model):
         """
         Compute and return the L2 norm of the gradients of the loss function.
         """
-        norm = 0.0
-        for grad in self.gradsH:
-            norm += torch.sum(grad ** 2)
-        grad_norm = torch.sqrt(norm)
+        grad_norm = 0
+        for p in model.parameters():
+            if p.grad is not None:
+                grad_norm += p.grad.norm(2).item() ** 2
+        grad_norm = grad_norm ** 0.5  # Take the square root of the sum of squares
         return grad_norm
 
 if __name__ == '__main__':
