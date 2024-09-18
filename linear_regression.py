@@ -117,9 +117,10 @@ def main():
         epoch_stats.append({
             "Epoch": epoch + 1,
             "Training Loss": train_loss,
-            "Gradient Norm": train_grad_norm,
+            "Training Gradient Norm": train_grad_norm,
             "Training Time (s)": train_time,
-            "Test Loss": test_loss
+            "Test Loss": test_loss,
+            "Test Gradient Norm": test_grad_norm
         })
         
         # output epoch results
@@ -163,10 +164,11 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
     model.train()  # Set model to training mode
 
     # set up counters
-    total_grad_norm = 0
-    total_loss = 0
+    total_grad_norm = 0.0
+    total_loss = 0.0
 
     for batch_idx, (inputs, labels) in enumerate(train_loader):
+        grad_norm = 0.0
         inputs, labels = inputs.to(device), labels.to(device)
         
         optimizer.zero_grad()
@@ -190,27 +192,34 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
 
     end_time = time.time()
     train_loss = total_loss/len(train_loader)
-    grad_norm = total_grad_norm/len(train_loader)
+    train_grad_norm = total_grad_norm/len(train_loader)
 
-    return train_loss, grad_norm, (end_time - start_time)
+    return train_loss, train_grad_norm, (end_time - start_time)
 
 def evaluate(model, test_loader, criterion, device):
     model.eval()  # Set model to evaluation mode
 
-    # TO SET UP
-    grad_norm = 0
+    total_grad_norm = 0.0 
+    total_loss = 0.0
 
-    with torch.no_grad():
-        total_loss = 0
-        for test_inputs, test_labels in test_loader:
-            test_inputs, test_labels = test_inputs.to(device), test_labels.to(device)
+    for test_inputs, test_labels in test_loader:
+        grad_norm = 0.0
+        test_inputs, test_labels = test_inputs.to(device), test_labels.to(device)
 
-            test_outputs = model(test_inputs)
-            total_loss += criterion(test_outputs, test_labels).item()
+        test_outputs = model(test_inputs)
+        loss = criterion(test_outputs, test_labels)
+        loss.backward()
 
-        test_loss = total_loss / len(test_loader)
+        # calculating gradient norm
+        grad_norm = get_grad_norm(model)
+
+        total_grad_norm += grad_norm
+        total_loss += loss.item()
+
+    test_loss = total_loss / len(test_loader)
+    test_grad_norm = total_grad_norm / len(test_loader)
     
-    return test_loss, grad_norm
+    return test_loss, test_grad_norm
 
 
 def get_grad_norm(model):
