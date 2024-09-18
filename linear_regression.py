@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import time
 import matplotlib.pyplot as plt
 from ucimlrepo import fetch_ucirepo
 import pandas as pd
@@ -8,7 +9,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from utils.gnom import GNOM
 import argparse
-import datetime
 
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Linear Regression Training with GNOM')
@@ -100,14 +100,14 @@ def main():
         test_loss, test_grad_norm = evaluate(model, test_loader, criterion, device)
         
         # output epoch results
-        print(f'Epoch {epoch+1}, Training Loss: {train_loss}, Test Loss: {test_loss}')
+        print(f'Epoch {epoch+1}, Training Loss: {train_loss}, Training Time (s): {train_time}, Test Loss: {test_loss}')
 
 def train_epoch_closure(model, optimizer, train_loader, device, criterion):
+    start_time = time.time()
     model.train()  # Set model to training mode
 
     # TO SET UP
     grad_norm = 0
-    time = 0
 
     total_loss = 0
     for batch_idx, (inputs, labels) in enumerate(train_loader):
@@ -123,16 +123,17 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
         
         total_loss += loss.item()
 
+    end_time = time.time()
     train_loss = total_loss/len(train_loader)
 
-    return train_loss, grad_norm, time
+    return train_loss, grad_norm, (end_time - start_time)
 
 def train_epoch_base(model, optimizer, train_loader, device, criterion):
+    start_time = time.time()
     model.train()  # Set model to training mode
 
     # TO SET UP
     grad_norm = 0
-    time = 0
     
     total_loss = 0
     for batch_idx, (inputs, labels) in enumerate(train_loader):
@@ -152,9 +153,10 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
         
         total_loss += loss.item()
 
+    end_time = time.time()
     train_loss = total_loss/len(train_loader)
 
-    return train_loss, grad_norm, time
+    return train_loss, grad_norm, (end_time - start_time)
 
 def evaluate(model, test_loader, criterion, device):
     model.eval()  # Set model to evaluation mode
