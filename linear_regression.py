@@ -100,14 +100,14 @@ def main():
         test_loss, test_grad_norm = evaluate(model, test_loader, criterion, device)
         
         # output epoch results
-        print(f'Epoch {epoch+1}, Training Loss: {train_loss}, Training Time (s): {train_time}, Test Loss: {test_loss}')
+        print(f'Epoch {epoch+1}, Training Loss: {train_loss}, Training Time (s): {train_time}, Train Gradient Norm: {train_grad_norm}, Test Loss: {test_loss}')
 
 def train_epoch_closure(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
     model.train()  # Set model to training mode
 
     # TO SET UP
-    grad_norm = 0
+    total_grad_norm = 0
 
     total_loss = 0
     for batch_idx, (inputs, labels) in enumerate(train_loader):
@@ -119,12 +119,14 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
         optimizer.set_closure(criterion, inputs, labels)
 
         # calls step() from GNOM to use info from closure to run steps
-        predictions, loss = optimizer.step()
+        predictions, loss, grad_norm = optimizer.step()
         
         total_loss += loss.item()
+        total_grad_norm += grad_norm
 
     end_time = time.time()
     train_loss = total_loss/len(train_loader)
+    grad_norm = total_grad_norm/len(train_loader)
 
     return train_loss, grad_norm, (end_time - start_time)
 
@@ -132,29 +134,39 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
     model.train()  # Set model to training mode
 
-    # TO SET UP
-    grad_norm = 0
-    
+    # set up counters
+    total_grad_norm = 0
     total_loss = 0
+
     for batch_idx, (inputs, labels) in enumerate(train_loader):
         inputs, labels = inputs.to(device), labels.to(device)
         
         optimizer.zero_grad()
 
-        # Forward pass
+        # forward pass
         outputs = model(inputs)
 
-        # Compute loss
+        # compute loss
         loss = criterion(outputs, labels)
 
-        # Backward pass and optimization
+        # backward pass
         loss.backward()
+
+        # calculating gradient norm
+        grad_norm = 0
+        for p in model.parameters():
+            if p.grad is not None:
+                grad_norm += p.grad.norm(2).item() ** 2
+        grad_norm = grad_norm ** 0.5  # Take the square root of the sum of squares
+        total_grad_norm += grad_norm
+
         optimizer.step()
         
         total_loss += loss.item()
 
     end_time = time.time()
     train_loss = total_loss/len(train_loader)
+    grad_norm = total_grad_norm/len(train_loader)
 
     return train_loss, grad_norm, (end_time - start_time)
 
@@ -175,6 +187,17 @@ def evaluate(model, test_loader, criterion, device):
         test_loss = total_loss / len(test_loader)
     
     return test_loss, grad_norm
+
+# from PyHessian
+def get_gradient_norm(self):
+        """
+        Compute and return the L2 norm of the gradients of the loss function.
+        """
+        norm = 0.0
+        for grad in self.gradsH:
+            norm += torch.sum(grad ** 2)
+        grad_norm = torch.sqrt(norm)
+        return grad_norm
 
 if __name__ == '__main__':
     main()

@@ -87,6 +87,14 @@ class GNOM(torch.optim.Optimizer):
             return self.model.no_sync()
         else:
             return contextlib.ExitStack()
+    
+    def grad_norm(self):
+        grad_norm = 0
+        for p in self.model.parameters():
+            if p.grad is not None:
+                grad_norm += p.grad.norm(2).item() ** 2
+        grad_norm = grad_norm ** 0.5  
+        return grad_norm
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
     @torch.no_grad()
@@ -117,6 +125,9 @@ class GNOM(torch.optim.Optimizer):
             # calculate oracle loss gradient/gradient at original weights (g_0)
             outputs, loss_value = get_grad()
 
+            # calculate gradient norm for tracking purposes
+            grad_norm = self.grad_norm()
+
             # calculate g (gradient of gradient norm squared, g = hessian@w * grad@w)
             g = self.grad_norm_grad()
 
@@ -133,7 +144,7 @@ class GNOM(torch.optim.Optimizer):
         # update with new directions
         self.base_optimizer.step()
 
-        return outputs, loss_value
+        return outputs, loss_value, grad_norm
 
     def zero_grad(self, set_to_none: bool = False):
         self.base_optimizer.zero_grad(set_to_none)
