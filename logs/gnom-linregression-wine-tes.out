@@ -1,0 +1,27 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) CCconfig        6)  ucx/1.14.1         11) flexiblas/3.3.1
+  2) gentoo/2023     7)  libfabric/1.18.0   12) imkl/2023.2.0
+  3) gcccore/.12.3   8)  pmix/4.2.4         13) StdEnv/2023
+  4) gcc/12.3        9)  ucc/1.2.0
+  5) hwloc/2.9.1     10) openmpi/4.1.5
+/home/tkleinkn/GAMtest/lib/python3.11/site-packages/torch/autograd/graph.py:744: UserWarning: Using backward() with create_graph=True will create a reference cycle between the parameter and its gradient which can cause a memory leak. We recommend using autograd.grad when creating the graph to avoid this. If you have to use this function, make sure to reset the .grad fields of your parameters to None after use to break the cycle and avoid the leak. (Triggered internally at /home/coulombc/wheels_builder/tmp.2617/python-3.11/torch/torch/csrc/autograd/engine.cpp:1203.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Input Parameters: 11
+Output Parameters: 1
+Training with GNOM
+     Epoch  Training Loss  ...  Test Loss  Test Gradient Norm
+0        1      31.336628  ...  29.206436           33.377785
+1        2      28.874809  ...  26.970249           31.859478
+2        3      26.624643  ...  24.914148           30.482912
+3        4      24.561796  ...  23.021580           29.203895
+4        5      22.667435  ...  21.278519           27.999265
+..     ...            ...  ...        ...                 ...
+195    196       0.550986  ...   0.554587            0.177988
+196    197       0.550949  ...   0.554569            0.177479
+197    198       0.550912  ...   0.554551            0.176988
+198    199       0.550876  ...   0.554534            0.176516
+199    200       0.550841  ...   0.554518            0.176061
+
+[200 rows x 6 columns]
