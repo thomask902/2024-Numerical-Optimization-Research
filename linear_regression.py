@@ -17,7 +17,7 @@ parser.add_argument('--optimizer', default='GD', help='Choose from GD, GNOM, or 
 parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
 parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate', dest='lr')
 parser.add_argument('--gpu', default=False, type=bool, help='Set to true to train with GPU.')
-parser.add_argument('--workers', default=1, type=int, help='number of data loading workers (default: 1)')
+parser.add_argument('--workers', default=0, type=int, help='number of data loading workers (default: 0)')
 parser.add_argument('--batch-size', default=0, type=int, help='mini-batch size (default: entire dataset)')
 parser.add_argument('--log_base', default='./linear_regression', type=str, help='path to save logs (default: none)')
 
