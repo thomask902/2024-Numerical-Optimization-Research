@@ -17,6 +17,8 @@ parser.add_argument('--optimizer', default='GD', help='Choose from GD, GNOM, or 
 parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
 parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate', dest='lr')
 parser.add_argument('--gpu', default=False, type=bool, help='Set to true to train with GPU.')
+parser.add_argument('--workers', default=1, type=int, help='number of data loading workers (default: 1)')
+parser.add_argument('--batch-size', default=0, type=int, help='mini-batch size (default: entire dataset)')
 parser.add_argument('--log_base', default='./linear_regression', type=str, help='path to save logs (default: none)')
 
 # defining the model
@@ -70,8 +72,19 @@ def main():
     # create datasets and loaders
     train_torch = torch.utils.data.TensorDataset(X_train_vals, y_train_vals)
     test_torch = torch.utils.data.TensorDataset(X_test_vals, y_test_vals)
-    train_loader = torch.utils.data.DataLoader(dataset=train_torch, batch_size=len(train_torch), shuffle=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_torch, batch_size=len(test_torch), shuffle=False)
+
+    # set batch_size for loaders
+    batch_train = 0
+    batch_test = 0
+    if args.batch_size == 0:
+        batch_train = len(train_torch)
+        batch_test = len(test_torch)
+    else:
+        batch_train = args.batch_size
+        batch_test = args.batch_size
+    
+    train_loader = torch.utils.data.DataLoader(dataset=train_torch, batch_size=batch_train, num_workers=args.workers, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(dataset=test_torch, batch_size=batch_test, num_workers=args.workers, shuffle=False)
 
     # set up model
     learningRate = args.lr
