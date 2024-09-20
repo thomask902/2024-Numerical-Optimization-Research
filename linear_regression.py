@@ -38,7 +38,12 @@ def main():
     # setting output location
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     learning_rate = "lr-" + str(args.lr)
-    log_path = os.path.join(args.log_base, "wine", args.optimizer, learning_rate, str(args.epochs), str(timestamp), "results.csv")
+    batch_title = ""
+    if args.batch_size == 0:
+        batch_title = "no_batching"
+    else:
+        batch_title = str(args.batch_size)
+    log_path = os.path.join(args.log_base, "wine", args.optimizer, learning_rate, str(args.epochs), batch_title, str(timestamp), "results.csv")
     log_directory = os.path.dirname(log_path)
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)

@@ -1,2 +1,0 @@
-Epoch,Training Loss,Training Gradient Norm,Training Time (s),Test Loss,Test Gradient Norm
-1,0.8274493687544595,4.481989335060977,6.517916917800903,0.6534569049062738,572.2166633566178
