@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import time
-from ucimlrepo import fetch_ucirepo
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -43,10 +42,11 @@ def main():
         os.makedirs(log_directory)
 
     # importing the dataset
-    wine_quality = fetch_ucirepo(id=186) 
-    
-    X = wine_quality.data.features 
-    y = wine_quality.data.targets 
+    reds_file = pd.read_csv("wine+quality/winequality-red.csv", sep=";")
+    whites_file = pd.read_csv("wine+quality/winequality-white.csv", sep=";")
+    combined = pd.concat([reds_file, whites_file], axis=0, ignore_index=True)
+    y = pd.DataFrame(combined.pop("quality"))
+    X = combined
 
     # normalize features and test train split
     scaler = StandardScaler()
