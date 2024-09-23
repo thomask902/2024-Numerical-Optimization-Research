@@ -82,6 +82,7 @@ def main():
     batch_train = 0
     batch_test = 0
     if args.batch_size == 0:
+        print(len(train_torch))
         batch_train = len(train_torch)
         batch_test = len(test_torch)
     else:
@@ -118,6 +119,7 @@ def main():
     epoch_stats = []
 
     for epoch in range(epochs):
+        print(f"Epoch {epoch + 1} underway \_(*_*)_/")
         train_loss = 0.0
         train_grad_norm = 0.0
         train_time = 0.0
