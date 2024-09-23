@@ -43,25 +43,17 @@ def main():
         batch_title = "no_batching"
     else:
         batch_title = str(args.batch_size)
-    log_path = os.path.join(args.log_base, "wine", args.optimizer, learning_rate, str(args.epochs), batch_title, str(timestamp), "results.csv")
+    log_path = os.path.join(args.log_base, "communities_and_crime", args.optimizer, learning_rate, str(args.epochs), batch_title, str(timestamp), "results.csv")
     log_directory = os.path.dirname(log_path)
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
 
     # importing the dataset
-    reds_file = pd.read_csv("wine+quality/winequality-red.csv", sep=";")
-    whites_file = pd.read_csv("wine+quality/winequality-white.csv", sep=";")
-    combined = pd.concat([reds_file, whites_file], axis=0, ignore_index=True)
-    y = pd.DataFrame(combined.pop("quality"))
-    X = combined
-
-    # normalize features and test train split
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns)
+    y = pd.read_csv("communities+and+crime/targets_cleaned.csv")
+    X = pd.read_csv("communities+and+crime/features_cleaned.csv")
 
     # Split the dataset into train and test sets (80% train, 20% test), random state fixes seed and gives same split each time
-    X_train, X_test, y_train, y_test = train_test_split(X_scaled_df, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     inputDim = X_train.shape[1]
     outputDim = y_train.shape[1]
@@ -119,7 +111,8 @@ def main():
     epoch_stats = []
 
     for epoch in range(epochs):
-        print(f"Epoch {epoch + 1} underway \_(*_*)_/")
+        if (epoch + 1) % 10 == 0:
+            print(f"Epoch {epoch + 1} underway \_(*.*)_/")
         train_loss = 0.0
         train_grad_norm = 0.0
         train_time = 0.0
