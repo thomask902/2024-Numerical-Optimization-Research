@@ -143,6 +143,17 @@ def main():
     df_stats = pd.DataFrame(epoch_stats)
     df_stats.to_csv(log_path, index=False)
     print(df_stats)
+    for p in model.parameters():
+        weights = p
+        break
+    top5, indices = torch.topk(weights[0], 5)
+    column_titles = X.columns[indices]
+    print("Five Highest Positively Contributing Factors to Violent Crime per Population:", column_titles)
+
+    bottom5, indices = torch.topk(-weights[0], 5)
+    column_titles = X.columns[indices]
+    print("Five Highest Negatively Contributing Factors to Violent Crime per Population:", column_titles)
+        
 
 def train_epoch_closure(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
