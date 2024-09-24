@@ -146,6 +146,21 @@ class GNOM(torch.optim.Optimizer):
 
         return outputs, loss_value, grad_norm
 
+    def calc_grad_norm(self, closure = None):
+        if closure:
+            get_grad = closure
+        else:
+            get_grad = self.forward_backward_func
+
+        with self.maybe_no_sync():
+            # calculate oracle loss gradient/gradient at original weights (g_0)
+            outputs, loss_value = get_grad()
+
+            # calculate gradient norm for tracking purposes
+            grad_norm = self.grad_norm()
+
+        return grad_norm
+
     def zero_grad(self, set_to_none: bool = False):
         self.base_optimizer.zero_grad(set_to_none)
 

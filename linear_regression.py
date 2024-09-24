@@ -159,9 +159,6 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
     model.train()  # Set model to training mode
 
-    # TO SET UP
-    total_grad_norm = 0
-
     total_loss = 0
     for batch_idx, (inputs, labels) in enumerate(train_loader):
         inputs, labels = inputs.to(device), labels.to(device)
@@ -175,24 +172,27 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
         predictions, loss, grad_norm = optimizer.step()
         
         total_loss += loss.item()
-        total_grad_norm += grad_norm
 
     end_time = time.time()
     train_loss = total_loss/len(train_loader)
-    grad_norm = total_grad_norm/len(train_loader)
 
-    return train_loss, grad_norm, (end_time - start_time)
+    # compute gradient norm over the entire training dataset
+    optimizer.zero_grad()
+    all_inputs = train_loader.dataset.tensors[0].to(device)
+    all_labels = train_loader.dataset.tensors[1].to(device)
+    optimizer.set_closure(criterion, all_inputs, all_labels)
+    train_grad_norm = optimizer.calc_grad_norm()
+    optimizer.zero_grad()
+
+    return train_loss, train_grad_norm, (end_time - start_time)
 
 def train_epoch_base(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
     model.train()  # Set model to training mode
 
-    # set up counters
-    total_grad_norm = 0.0
     total_loss = 0.0
 
     for batch_idx, (inputs, labels) in enumerate(train_loader):
-        grad_norm = 0.0
         inputs, labels = inputs.to(device), labels.to(device)
         
         optimizer.zero_grad()
@@ -206,43 +206,52 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
         # backward pass
         loss.backward()
 
-        # calculating gradient norm
-        grad_norm = get_grad_norm(model)
-        total_grad_norm += grad_norm
-
         optimizer.step()
         
         total_loss += loss.item()
 
     end_time = time.time()
-    train_loss = total_loss/len(train_loader)
-    train_grad_norm = total_grad_norm/len(train_loader)
+    train_loss = total_loss / len(train_loader)
+
+    # compute gradient norm over the entire training dataset
+    optimizer.zero_grad()
+    all_inputs = train_loader.dataset.tensors[0].to(device)
+    all_labels = train_loader.dataset.tensors[1].to(device)
+    all_outputs = model(all_inputs)
+    total_dataset_loss = criterion(all_outputs, all_labels)
+    total_dataset_loss.backward()
+
+    train_grad_norm = get_grad_norm(model)
+
+    optimizer.zero_grad()
 
     return train_loss, train_grad_norm, (end_time - start_time)
 
 def evaluate(model, test_loader, criterion, device):
     model.eval()  # Set model to evaluation mode
 
-    total_grad_norm = 0.0 
-    total_loss = 0.0
+    # Get the entire test dataset
+    all_inputs = test_loader.dataset.tensors[0].to(device)
+    all_labels = test_loader.dataset.tensors[1].to(device)
 
-    for test_inputs, test_labels in test_loader:
-        grad_norm = 0.0
-        test_inputs, test_labels = test_inputs.to(device), test_labels.to(device)
+    # Compute loss without gradients for performance
+    with torch.no_grad():
+        all_outputs = model(all_inputs)
+        loss = criterion(all_outputs, all_labels)
+    test_loss = loss.item()
 
-        test_outputs = model(test_inputs)
-        loss = criterion(test_outputs, test_labels)
-        loss.backward()
+    # === Compute gradient norm over the entire test dataset ===
+    model.zero_grad()
+    # Perform forward pass again to compute gradients
+    all_outputs = model(all_inputs)
+    total_dataset_loss = criterion(all_outputs, all_labels)
+    # Backward pass to compute gradients
+    total_dataset_loss.backward()
+    # Compute gradient norm
+    test_grad_norm = get_grad_norm(model)
+    model.zero_grad()
+    # === End of gradient norm computation ===
 
-        # calculating gradient norm
-        grad_norm = get_grad_norm(model)
-
-        total_grad_norm += grad_norm
-        total_loss += loss.item()
-
-    test_loss = total_loss / len(test_loader)
-    test_grad_norm = total_grad_norm / len(test_loader)
-    
     return test_loss, test_grad_norm
 
 
