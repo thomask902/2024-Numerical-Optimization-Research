@@ -87,7 +87,6 @@ def main():
     # set up model
     learningRate = args.lr
     epochs = args.epochs
-    interval = 10
     model = linearRegression(inputDim, outputDim)
 
     device = torch.device('cuda' if args.gpu else 'cpu')
@@ -110,30 +109,12 @@ def main():
 
     # List to hold stats for each epoch
     epoch_stats = []
-
-    # Positions for the animation
-    position_of_underway = 10  # Starting column for the word 'underway'
-    finish_line_position = 70  # Column where the finish line is placed
-    total_steps = epochs // interval  # Total number of steps in the animation
+    spaces = ""
 
     for epoch in range(1, epochs + 1):
-        if epoch % interval == 0:
-            step_num = epoch // interval  # Current step number in the animation
-
-            # Calculate the stick figure's position
-            stick_man_position = position_of_underway + (
-                (finish_line_position - position_of_underway) * step_num
-            ) // total_steps
-
-            # Build the line to display
-            line = ' ' * position_of_underway + 'underway'  # Position 'underway'
-            num_spaces = stick_man_position - position_of_underway - len('underway')
-            if num_spaces < 0:
-                num_spaces = 0
-            spaces_between = ' ' * num_spaces
-            stick_man = '\(*_*)/'
-
-            print(f"Epoch {epoch}{line}{spaces_between}{stick_man}")
+        if epoch % 10 == 0:
+            print(f"Epoch {epoch} underway {spaces}\(*_*)/")
+            spaces += " "
         
         train_loss = 0.0
         train_grad_norm = 0.0
