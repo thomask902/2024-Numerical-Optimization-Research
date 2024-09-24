@@ -98,7 +98,7 @@ class GNOM(torch.optim.Optimizer):
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
     @torch.no_grad()
-    def set_closure(self, loss_fn, inputs, targets, **kwargs):
+    def set_closure(self, loss_fn, inputs, targets, create_graph=True, **kwargs):
         # create self.forward_backward_func, which is a function such that
         # self.forward_backward_func() automatically performs forward and backward passes.
 
@@ -108,7 +108,7 @@ class GNOM(torch.optim.Optimizer):
                 outputs = self.model(inputs)
                 loss = loss_fn(outputs, targets, **kwargs)
             loss_value = loss.data.clone().detach()
-            loss.backward(create_graph = True)
+            loss.backward(create_graph = create_graph)
             return outputs, loss_value
 
         self.forward_backward_func = get_grad
@@ -146,19 +146,9 @@ class GNOM(torch.optim.Optimizer):
 
         return outputs, loss_value, grad_norm
 
-    def calc_grad_norm(self, closure = None):
-        if closure:
-            get_grad = closure
-        else:
-            get_grad = self.forward_backward_func
-
-        with self.maybe_no_sync():
-            # calculate oracle loss gradient/gradient at original weights (g_0)
-            outputs, loss_value = get_grad()
-
-            # calculate gradient norm for tracking purposes
-            grad_norm = self.grad_norm()
-
+    def calc_grad_norm(self):
+        outputs, loss_value = self.forward_backward_func()
+        grad_norm = self.grad_norm()
         return grad_norm
 
     def zero_grad(self, set_to_none: bool = False):

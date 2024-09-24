@@ -176,11 +176,11 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
     end_time = time.time()
     train_loss = total_loss/len(train_loader)
 
-    # compute gradient norm over the entire training dataset
+    # Compute gradient norm over the entire training dataset
     optimizer.zero_grad()
     all_inputs = train_loader.dataset.tensors[0].to(device)
     all_labels = train_loader.dataset.tensors[1].to(device)
-    optimizer.set_closure(criterion, all_inputs, all_labels)
+    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False)
     train_grad_norm = optimizer.calc_grad_norm()
     optimizer.zero_grad()
 
