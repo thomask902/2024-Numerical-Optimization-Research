@@ -14,16 +14,26 @@ class linearRegression(nn.Module):
         out = self.linear(x)
         return out
 
+class logisticRegression(nn.Module):
+    def __init__(self, inputSize):
+        super(logisticRegression, self).__init__()
+        self.linear = nn.Linear(inputSize, 1)
+
+    def forward(self, x):
+        out = torch.sigmoid(self.linear(x))
+        return out
 
 
 def main():
 
-    # define number of samples to approximate Libpschitz with
-    num_samples = 1000
+    # define number of samples to approximate Lipschitz with
+    num_samples = 10
 
     # importing the dataset
-    y = pd.read_csv("communities+and+crime/targets_cleaned.csv")
-    X = pd.read_csv("communities+and+crime/features_cleaned.csv")
+    # y = pd.read_csv("communities+and+crime/targets_cleaned.csv")
+    # X = pd.read_csv("communities+and+crime/features_cleaned.csv")
+    y = pd.read_csv("arcene/targets_cleaned.csv")
+    X = pd.read_csv("arcene/features_cleaned.csv")
 
     inputDim = X.shape[1]
     outputDim = y.shape[1]
@@ -35,10 +45,14 @@ def main():
     loader = torch.utils.data.DataLoader(dataset=data_torch, batch_size=1, num_workers=0, shuffle=False)
     
     # create model, loss function, and optimizer
-    model = linearRegression(inputDim, outputDim)
+    #model = linearRegression(inputDim, outputDim)
+    model = logisticRegression(inputDim)
+
     device = torch.device('cpu') # change if GPU
     model.to(device)
-    criterion = torch.nn.MSELoss()
+
+    # criterion = torch.nn.MSELoss()
+    criterion = torch.nn.BCELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1) # lr does not matter, will never step
 
     # create tensors to store results
@@ -91,7 +105,5 @@ def main():
     print(f'Approximated Lipschitz: {lipschitz}')
             
             
-            
-
 if __name__ == '__main__':
     main()

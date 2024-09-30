@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # taking in arguments to determine how the model will be run
-parser = argparse.ArgumentParser(description='PyTorch Logistic Regression Training with GNOM')
+parser = argparse.ArgumentParser(description='PyTorch Logistic Regression Training')
 
 parser.add_argument('--optimizer', default='GD', help='Choose from GD, GNOM, or GAM')
 parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
