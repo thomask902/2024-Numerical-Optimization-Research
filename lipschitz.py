@@ -27,7 +27,7 @@ class logisticRegression(nn.Module):
 def main():
 
     # define number of samples to approximate Lipschitz with
-    num_samples = 10
+    num_samples = 200
 
     # importing the dataset
     # y = pd.read_csv("communities+and+crime/targets_cleaned.csv")

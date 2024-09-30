@@ -113,7 +113,7 @@ def main():
 
     for epoch in range(1, epochs + 1):
         if epoch % 10 == 0:
-            print(f"Epoch {epoch} underway {spaces}\(*_*)/")
+            print(f"Epoch {epoch} underway {spaces}\\(*_*)/")
             spaces += " "
         
         train_loss = 0.0
