@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset, random_split
 import time
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -20,6 +21,9 @@ parser.add_argument('--gpu', default=False, type=bool, help='Set to true to trai
 parser.add_argument('--workers', default=0, type=int, help='number of data loading workers (default: 0)')
 parser.add_argument('--batch-size', default=0, type=int, help='mini-batch size (default: entire dataset)')
 parser.add_argument('--log_base', default='./logistic_regression', type=str, help='path to save logs (default: none)')
+parser.add_argument('--n', default=2000, type=int, help='number of features in generated dataset')
+parser.add_argument('--m', default=1000, type=int, help='number of examples in generated datset')
+
 
 # defining the model
 class logisticRegression(nn.Module):
@@ -35,6 +39,9 @@ def main():
 
     args = parser.parse_args()
 
+    # for generated dataset
+    data_name = f'n_{args.n}_m_{args.m}'
+
     # setting output location
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     learning_rate = "lr-" + str(args.lr)
@@ -43,11 +50,13 @@ def main():
         batch_title = "no_batching"
     else:
         batch_title = str(args.batch_size)
-    log_path = os.path.join(args.log_base, "arcene", args.optimizer, learning_rate, str(args.epochs), batch_title, str(timestamp), "results.csv")
+    log_path = os.path.join(args.log_base, "generated", data_name, args.optimizer, learning_rate, str(args.epochs), batch_title, str(timestamp), "results.csv")
     log_directory = os.path.dirname(log_path)
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
 
+    # FOR CSV DATASETS
+    '''
     # importing the dataset
     X = pd.read_csv("arcene/features_cleaned.csv")
     y = pd.read_csv("arcene/targets_cleaned.csv")
@@ -66,9 +75,34 @@ def main():
     y_train_vals = torch.tensor(y_train.values, dtype=torch.float32)
     y_test_vals = torch.tensor(y_test.values, dtype=torch.float32)
 
-    # create datasets and loaders
-    train_torch = torch.utils.data.TensorDataset(X_train_vals, y_train_vals)
-    test_torch = torch.utils.data.TensorDataset(X_test_vals, y_test_vals)
+    train_torch = TensorDataset(X_train_vals, y_train_vals)
+    test_torch = TensorDataset(X_test_vals, y_test_vals)
+    '''
+
+    # FOR GENERATED .pt DATASETS
+
+    # load in dataset
+    data = torch.load(f'generated_data/{data_name}.pt')
+    features = data['features']
+    inputDim = features.shape[1]
+    labels = data['labels'].unsqueeze(1).float()
+    dataset = TensorDataset(features, labels)
+
+    # test train split
+    train_size = int(0.8 * len(dataset))
+    test_size = len(dataset) - train_size
+    train_subset, test_subset = random_split(dataset, [train_size, test_size])
+
+    # set to their own datasets
+    train_features = torch.stack([dataset[i][0] for i in train_subset.indices])
+    train_labels = torch.stack([dataset[i][1] for i in train_subset.indices])
+    train_torch = TensorDataset(train_features, train_labels)
+
+    test_features = torch.stack([dataset[i][0] for i in test_subset.indices])
+    test_labels = torch.stack([dataset[i][1] for i in test_subset.indices])
+    test_torch = TensorDataset(test_features, test_labels)
+
+    # THE FOLLOWING IS FOR ANY DATASET
 
     # set batch_size for loaders
     batch_train = 0
@@ -81,8 +115,8 @@ def main():
         batch_train = args.batch_size
         batch_test = args.batch_size
     
-    train_loader = torch.utils.data.DataLoader(dataset=train_torch, batch_size=batch_train, num_workers=args.workers, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_torch, batch_size=batch_test, num_workers=args.workers, shuffle=False)
+    train_loader = DataLoader(dataset=train_torch, batch_size=batch_train, num_workers=args.workers, shuffle=True)
+    test_loader = DataLoader(dataset=test_torch, batch_size=batch_test, num_workers=args.workers, shuffle=False)
 
     # set up model
     learningRate = args.lr

@@ -27,22 +27,35 @@ class logisticRegression(nn.Module):
 def main():
 
     # define number of samples to approximate Lipschitz with
-    num_samples = 200
+    num_samples = 1000
 
     # importing the dataset
     # y = pd.read_csv("communities+and+crime/targets_cleaned.csv")
     # X = pd.read_csv("communities+and+crime/features_cleaned.csv")
-    y = pd.read_csv("arcene/targets_cleaned.csv")
-    X = pd.read_csv("arcene/features_cleaned.csv")
+    # y = pd.read_csv("arcene/targets_cleaned.csv")
+    # X = pd.read_csv("arcene/features_cleaned.csv")
 
-    inputDim = X.shape[1]
-    outputDim = y.shape[1]
+    # FOR GENERATED .pt DATASETS
+
+    # load in dataset
+    data = torch.load(f'generated_data/n_2000_m_4000.pt')
+    features = data['features']
+    inputDim = features.shape[1]
+    labels = data['labels'].unsqueeze(1).float()
+    dataset = torch.utils.data.TensorDataset(features, labels)
+
+  
+    inputDim = dataset.tensors[0].shape[1]
+    print("dim:", inputDim)
+    # inputDim = X.shape[1]
+    # outputDim = y.shape[1]
 
     # convert data to tensors and create loader
-    X_vals = torch.tensor(X.values, dtype=torch.float32)
-    y_vals = torch.tensor(y.values, dtype=torch.float32)
-    data_torch = torch.utils.data.TensorDataset(X_vals, y_vals)
-    loader = torch.utils.data.DataLoader(dataset=data_torch, batch_size=1, num_workers=0, shuffle=False)
+    #X_vals = torch.tensor(X.values, dtype=torch.float32)
+    #y_vals = torch.tensor(y.values, dtype=torch.float32)
+    #data_torch = torch.utils.data.TensorDataset(X_vals, y_vals)
+
+    loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=1, num_workers=0, shuffle=False)
     
     # create model, loss function, and optimizer
     #model = linearRegression(inputDim, outputDim)
