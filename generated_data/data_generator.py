@@ -1,14 +1,42 @@
 import torch
 
-n = 10 # number of features
-m = 2 # number of samples
+n = 100 # number of features
+m = 100 # number of samples
 
+k = int(0.05 * n)  # Number of non-zero components
+a = 1.0  # Norm constraint for x̄
 
-features = torch.rand(m, n)
-labels = torch.randint(0, 2, (m,))
+# Generate x̄ with norm ≤ a
+x_bar = torch.randn(n)
+x_bar = x_bar / x_bar.norm() * a
 
+# Lists to hold features and labels
+features = []
+labels = []
+
+for _ in range(m):
+    # Generate sparse u_i
+    indices = torch.randperm(n)[:k]
+    values = torch.rand(k)
+    u_i = torch.zeros(n)
+    u_i[indices] = values
+
+    # Compute s_i and label v_i
+    s_i = torch.dot(x_bar, u_i)
+    v_i = 1 if s_i > 0 else 0  # Assign label based on sign
+
+    # Append to lists
+    features.append(u_i)
+    labels.append(v_i)
+
+print(f'features ex: {features[1]}')
+print(f'label ex: {labels[1]}')
+
+# Convert to tensors
+features = torch.stack(features)
+labels = torch.tensor(labels)
 
 print(f"Features Shape: {features.shape}")
 print(f"Labels Shape: {labels.shape}")
 
-torch.save({'features': features, 'labels': labels}, 'test_dataset.pt')
+torch.save({'features': features, 'labels': labels}, 'generated_data/test_dataset.pt')
