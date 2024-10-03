@@ -165,7 +165,7 @@ def main():
         test_loss, test_grad_norm, accuracy = evaluate(model, test_loader, criterion, device)
 
         epoch_stats.append({
-            "Epoch": epoch + 1,
+            "Epoch": epoch,
             "Training Loss": train_loss,
             "Training Gradient Norm": train_grad_norm,
             "Training Time (s)": train_time,
