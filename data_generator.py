@@ -1,7 +1,7 @@
 import torch
 
-n = 100 # number of features
-m = 100 # number of samples
+n = 8000 # number of features
+m = 1000 # number of samples
 
 k = int(0.05 * n)  # Number of non-zero components
 a = 1.0  # Norm constraint for x̄
@@ -29,9 +29,6 @@ for _ in range(m):
     features.append(u_i)
     labels.append(v_i)
 
-print(f'features ex: {features[1]}')
-print(f'label ex: {labels[1]}')
-
 # Convert to tensors
 features = torch.stack(features)
 labels = torch.tensor(labels)
@@ -39,4 +36,4 @@ labels = torch.tensor(labels)
 print(f"Features Shape: {features.shape}")
 print(f"Labels Shape: {labels.shape}")
 
-torch.save({'features': features, 'labels': labels}, 'generated_data/test_dataset.pt')
+torch.save({'features': features, 'labels': labels}, f'generated_data/n_{n}_m_{m}.pt')
