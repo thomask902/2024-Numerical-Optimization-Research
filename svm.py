@@ -1,7 +1,3 @@
-# make sure to relabel 0s as 1s
-
-
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -14,6 +10,7 @@ from utils.gnom import GNOM
 import argparse
 import os
 from datetime import datetime
+import sys
 
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Support Vector Machine Training')
@@ -27,17 +24,21 @@ parser.add_argument('--batch-size', default=0, type=int, help='mini-batch size (
 parser.add_argument('--log_base', default='./svm', type=str, help='path to save logs (default: none)')
 parser.add_argument('--n', default=2000, type=int, help='number of features in generated dataset')
 parser.add_argument('--m', default=1000, type=int, help='number of examples in generated datset')
+parser.add_argument('--loss', default="hinge", type=str, help='enter hinge or sigmoid')
 
 
-# defining the model (ADD SVM)
-class logisticRegression(nn.Module):
-    def __init__(self, inputSize):
-        super(logisticRegression, self).__init__()
-        self.linear = nn.Linear(inputSize, 1)
+# defining the loss functions
+class Squared_Hinge_Loss(nn.Module):    
+    def __init__(self):
+        super(Squared_Hinge_Loss,self).__init__()
+    def forward(self, outputs, labels): 
+        return torch.mean((torch.clamp(1 - outputs * labels, min=0)) ** 2)  
 
-    def forward(self, x):
-        out = torch.sigmoid(self.linear(x))
-        return out
+class Sigmoid_Loss(nn.Module):    
+    def __init__(self):
+        super(Sigmoid_Loss,self).__init__()
+    def forward(self, outputs, labels):
+        return torch.mean(1 - torch.sigmoid(outputs * labels))
 
 def main():
 
@@ -63,7 +64,7 @@ def main():
     # load in train dataset
     train_data = torch.load(f'generated_data/{data_name}.pt')
     train_features = train_data['features']
-    inputDim = train_features.shape[1]
+    input_dim = train_features.shape[1]
     train_labels = train_data['labels'].unsqueeze(1).float()
     train_labels[train_labels == 0] = -1 # added for SVM model
     train_dataset = TensorDataset(train_features, train_labels)
@@ -71,7 +72,6 @@ def main():
     # load in test dataset
     test_data = torch.load(f'generated_data/n_{args.n}_test.pt')
     test_features = test_data['features']
-    inputDim = test_features.shape[1]
     test_labels = test_data['labels'].unsqueeze(1).float()
     test_labels[test_labels == 0] = -1 # added for SVM model
     test_dataset = TensorDataset(test_features, test_labels)
@@ -94,15 +94,21 @@ def main():
     learningRate = args.lr
     epochs = args.epochs
 
-    # CHANGE MODEL
-    model = logisticRegression(inputDim)
+    # linear model for SVM
+    model = nn.Linear(input_dim, 1)
 
     device = torch.device('cuda' if args.gpu else 'cpu')
     model.to(device)
 
-    # initialize loss and optimzer
-    # ADD NEW LOSS
-    criterion = torch.nn.BCELoss() 
+    # initialize loss
+    if args.loss == "hinge":
+        criterion = Squared_Hinge_Loss() 
+    elif args.loss == "sigmoid":
+        criterion = Sigmoid_Loss()
+    else:
+        raise ValueError("Please enter a valid loss function!")
+
+    # initialize optimizer
     base_optimizer = torch.optim.SGD(model.parameters(), lr=learningRate)
 
     if args.optimizer == "GD":
@@ -110,11 +116,10 @@ def main():
     elif args.optimizer == "GNOM":
         optimizer = GNOM(params=model.parameters(), base_optimizer=base_optimizer, model=model)
     else:
-        print("Please enter a valid optimizer")
-        return # exits program
+        raise ValueError("Please enter a valid optimizer!")
 
     # training
-    print(f"Training with {args.optimizer}") # this will be in name of output file
+    print(f"Training with {args.optimizer} and {args.loss} loss") # this will be in name of output file
 
     # List to hold stats for each epoch
     epoch_stats = []
@@ -146,7 +151,8 @@ def main():
             "Training Time (s)": train_time,
             "Test Loss": test_loss,
             "Test Gradient Norm": test_grad_norm,
-            "Test Accuracy": accuracy
+            "Test Accuracy": accuracy,
+            "Test Error": 1 - accuracy
         })
 
     # print and save results of run
@@ -172,6 +178,8 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
         predictions, loss, grad_norm = optimizer.step()
         
         total_loss += loss.item()
+        if (batch_idx + 1) % 100 == 0:
+            print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
 
     end_time = time.time()
     train_loss = total_loss/len(train_loader)
@@ -209,6 +217,9 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
         optimizer.step()
         
         total_loss += loss.item()
+        if (batch_idx + 1) % 100 == 0:
+            print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
+
 
     end_time = time.time()
     train_loss = total_loss / len(train_loader)
@@ -234,11 +245,12 @@ def evaluate(model, test_loader, criterion, device):
     all_inputs = test_loader.dataset.tensors[0].to(device)
     all_labels = test_loader.dataset.tensors[1].to(device)
 
-    # Compute loss and accuracy without gradients for performance
+    # computing accuracy as the paper demanded
     with torch.no_grad():
         all_outputs = model(all_inputs)
-        predicted_labels = (all_outputs >= 0.5).float()
-        acc = predicted_labels.eq(all_labels).sum() / float(all_labels.shape[0])
+        prod = all_outputs * all_labels
+        num_correct = (prod > 0).sum().item()
+        acc = float(num_correct) / float(all_labels.shape[0])
         loss = criterion(all_outputs, all_labels)
         
     test_loss = loss.item()
@@ -255,7 +267,7 @@ def evaluate(model, test_loader, criterion, device):
     model.zero_grad()
     # === End of gradient norm computation ===
 
-    return test_loss, test_grad_norm, acc.item()
+    return test_loss, test_grad_norm, acc
 
 
 def get_grad_norm(model):

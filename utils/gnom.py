@@ -66,27 +66,6 @@ class GNOM(torch.optim.Optimizer):
             p.grad = g[start_idx:start_idx + numel].view_as(p).clone()
             start_idx += numel
 
-
-    # syncs gradients if distributed training has been chosen
-    @torch.no_grad()
-    def _sync_grad(self):
-        if torch.distributed.is_initialized():  # synchronize final gradients
-            for group in self.param_groups:
-                for p in group['params']:
-                    if p.grad is None: continue
-                    if self.manual_average:
-                        torch.distributed.all_reduce(p.grad, op=self.grad_reduce)
-                        world_size = torch.distributed.get_world_size()
-                        p.grad.div_(float(world_size))
-                    else:
-                        torch.distributed.all_reduce(p.grad, op=self.grad_reduce)
-        return
-
-    def maybe_no_sync(self):
-        if torch.distributed.is_initialized():
-            return self.model.no_sync()
-        else:
-            return contextlib.ExitStack()
     
     def grad_norm(self):
         grad_norm = 0
@@ -97,16 +76,14 @@ class GNOM(torch.optim.Optimizer):
         return grad_norm
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
-    @torch.no_grad()
     def set_closure(self, loss_fn, inputs, targets, create_graph=True, **kwargs):
         # create self.forward_backward_func, which is a function such that
         # self.forward_backward_func() automatically performs forward and backward passes.
 
         def get_grad():
             self.zero_grad()
-            with torch.enable_grad():
-                outputs = self.model(inputs)
-                loss = loss_fn(outputs, targets, **kwargs)
+            outputs = self.model(inputs)
+            loss = loss_fn(outputs, targets, **kwargs)
             loss_value = loss.data.clone().detach()
             loss.backward(create_graph = create_graph)
             return outputs, loss_value
@@ -121,25 +98,21 @@ class GNOM(torch.optim.Optimizer):
         else:
             get_grad = self.forward_backward_func
 
-        with self.maybe_no_sync():
-            # calculate oracle loss gradient/gradient at original weights (g_0)
-            outputs, loss_value = get_grad()
+        # calculate oracle loss gradient/gradient at original weights (g_0)
+        outputs, loss_value = get_grad()
 
-            # calculate gradient norm for tracking purposes
-            grad_norm = self.grad_norm()
+        # calculate gradient norm for tracking purposes
+        grad_norm = self.grad_norm()
 
-            # calculate g (gradient of gradient norm squared, g = hessian@w * grad@w)
-            g = self.grad_norm_grad()
+        # calculate g (gradient of gradient norm squared, g = hessian@w * grad@w)
+        g = self.grad_norm_grad()
 
-            # clear gradient manually to ensure graph is not being tracked
-            for p in self.model.parameters():
-                p.grad = None
+        # clear gradient manually to ensure graph is not being tracked
+        for p in self.model.parameters():
+            p.grad = None
 
-            # set gradient to hessian vector product, g
-            self.set_gradients(g)
-
-        # synchronize gradients across workers
-        self._sync_grad()
+        # set gradient to hessian vector product, g
+        self.set_gradients(g)
 
         # update with new directions
         self.base_optimizer.step()
