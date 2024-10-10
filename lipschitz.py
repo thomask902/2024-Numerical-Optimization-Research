@@ -23,6 +23,18 @@ class logisticRegression(nn.Module):
         out = torch.sigmoid(self.linear(x))
         return out
 
+class Squared_Hinge_Loss(nn.Module):    
+    def __init__(self):
+        super(Squared_Hinge_Loss,self).__init__()
+    def forward(self, outputs, labels): 
+        return torch.mean((torch.clamp(1 - outputs * labels, min=0)) ** 2)  
+
+class Sigmoid_Loss(nn.Module):    
+    def __init__(self):
+        super(Sigmoid_Loss,self).__init__()
+    def forward(self, outputs, labels):
+        return torch.mean(1 - torch.sigmoid(outputs * labels))
+
 
 def main():
 
@@ -58,14 +70,18 @@ def main():
     loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=1, num_workers=0, shuffle=False)
     
     # create model, loss function, and optimizer
-    #model = linearRegression(inputDim, outputDim)
-    model = logisticRegression(inputDim)
+    # model = linearRegression(inputDim, outputDim)
+    # model = logisticRegression(inputDim)
+    model = nn.Linear(inputDim, 1)
 
     device = torch.device('cpu') # change if GPU
     model.to(device)
 
     # criterion = torch.nn.MSELoss()
-    criterion = torch.nn.BCELoss()
+    # criterion = torch.nn.BCELoss()
+    criterion = Squared_Hinge_Loss()
+    # criterion = Sigmoid_Loss()
+
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1) # lr does not matter, will never step
 
     # create tensors to store results
