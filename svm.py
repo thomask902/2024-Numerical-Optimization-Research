@@ -55,7 +55,7 @@ def main():
         batch_title = "no_batching"
     else:
         batch_title = str(args.batch_size)
-    log_path = os.path.join(args.log_base, "generated", data_name, args.optimizer, learning_rate, str(args.epochs), batch_title, str(timestamp), "results.csv")
+    log_path = os.path.join(args.log_base, "generated", args.loss, data_name, args.optimizer, learning_rate, str(args.epochs), batch_title, str(timestamp), "results.csv")
     log_directory = os.path.dirname(log_path)
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
@@ -178,8 +178,8 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
         predictions, loss, grad_norm = optimizer.step()
         
         total_loss += loss.item()
-        if (batch_idx + 1) % 100 == 0:
-            print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
+        #if (batch_idx + 1) % 100 == 0:
+        #    print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
 
     end_time = time.time()
     train_loss = total_loss/len(train_loader)
@@ -217,8 +217,8 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
         optimizer.step()
         
         total_loss += loss.item()
-        if (batch_idx + 1) % 100 == 0:
-            print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
+        #if (batch_idx + 1) % 100 == 0:
+        #    print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
 
 
     end_time = time.time()
