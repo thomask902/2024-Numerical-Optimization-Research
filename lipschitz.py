@@ -79,8 +79,8 @@ def main():
 
     # criterion = torch.nn.MSELoss()
     # criterion = torch.nn.BCELoss()
-    criterion = Squared_Hinge_Loss()
-    # criterion = Sigmoid_Loss()
+    # criterion = Squared_Hinge_Loss()
+    criterion = Sigmoid_Loss()
 
     optimizer = torch.optim.SGD(model.parameters(), lr=0.1) # lr does not matter, will never step
 
