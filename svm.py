@@ -25,6 +25,7 @@ parser.add_argument('--log_base', default='./svm', type=str, help='path to save 
 parser.add_argument('--n', default=2000, type=int, help='number of features in generated dataset')
 parser.add_argument('--m', default=1000, type=int, help='number of examples in generated datset')
 parser.add_argument('--loss', default="hinge", type=str, help='enter hinge or sigmoid')
+parser.add_argument('--wd', default=0.0, type=float, help='weight decay, default is none')
 
 
 # defining the loss functions
@@ -38,7 +39,7 @@ class Sigmoid_Loss(nn.Module):
     def __init__(self):
         super(Sigmoid_Loss,self).__init__()
     def forward(self, outputs, labels):
-        return torch.mean(1 - torch.sigmoid(outputs * labels))
+        return torch.mean(1 - torch.tanh(outputs * labels))
 
 def main():
 
@@ -50,12 +51,15 @@ def main():
     # setting output location
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     learning_rate = "lr-" + str(args.lr)
-    batch_title = ""
     if args.batch_size == 0:
         batch_title = "no_batching"
     else:
         batch_title = str(args.batch_size)
-    log_path = os.path.join(args.log_base, "generated", args.loss, data_name, args.optimizer, learning_rate, str(args.epochs), batch_title, str(timestamp), "results.csv")
+    if args.wd == 0.0:
+        weight_decay = "no_wd"
+    else:
+        weight_decay = str(args.wd)
+    log_path = os.path.join(args.log_base, "generated", args.loss, data_name, args.optimizer, learning_rate, str(args.epochs), batch_title, weight_decay, str(timestamp), "results.csv")
     log_directory = os.path.dirname(log_path)
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
@@ -109,7 +113,7 @@ def main():
         raise ValueError("Please enter a valid loss function!")
 
     # initialize optimizer
-    base_optimizer = torch.optim.SGD(model.parameters(), lr=learningRate)
+    base_optimizer = torch.optim.SGD(model.parameters(), lr=learningRate, weight_decay=args.wd)
 
     if args.optimizer == "GD":
         optimizer = base_optimizer

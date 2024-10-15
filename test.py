@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from utils.gnom_noised import GNOM_noised
+from utils.ag import AG
 
 # Define a simple neural network with one linear layer
 class SimpleNet(nn.Module):
@@ -19,13 +19,16 @@ base_optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
 # Define dummy arguments needed for the GNOM_noised optimizer
 class Args:
-    noise_threshold = 2 
-    noise_radius = 0.01  
+    loss = "hinge" 
+    lipschitz = 70  
 
 args = Args()
 
 # Create the custom GNOM_noised optimizer
-optimizer = GNOM_noised(model.parameters(), base_optimizer, model, args=args)
+optimizer = AG(model.parameters(), base_optimizer, model, args=args)
+print(repr(optimizer))
+
+''' TO TEST OPTIMIZER
 
 # Dummy input and target data
 inputs = torch.tensor([[0.1, 0.2, 0.3]])
@@ -52,6 +55,8 @@ print(f"Noise applied in {noise_count} out of {optimizer.total_batches} batches 
 # Print the updated model parameters
 for param in model.parameters():
     print(f"Updated parameter: {param.data}")
+
+'''
 
 '''
 if args.GNOM_noised:
