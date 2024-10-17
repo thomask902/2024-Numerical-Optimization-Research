@@ -88,6 +88,8 @@ class AG(torch.optim.Optimizer):
         # compute gradient at x^md_k (get_grad)
         outputs, loss_value = get_grad()
 
+        grad_norm = self.grad_norm()
+
         # now need to update x_k and x^md_k
         for group in self.param_groups:
             for p in group['params']:
@@ -112,7 +114,21 @@ class AG(torch.optim.Optimizer):
         # set "k = k+1" by updating parameters (last step)
         self.update_k()
 
-        return loss_value
+        return outputs, loss_value, grad_norm
+    
+    def grad_norm(self):
+        grad_norm = 0
+        for group in self.param_groups:
+            for p in group['params']:
+                if p.grad is not None:
+                    grad_norm += p.grad.norm(2).item() ** 2
+        grad_norm = grad_norm ** 0.5  
+        return grad_norm
+
+    def calc_grad_norm(self):
+        outputs, loss_value = self.forward_backward_func()
+        grad_norm = self.grad_norm()
+        return grad_norm
 
 
     def __repr__(self):
