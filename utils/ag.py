@@ -98,8 +98,9 @@ class AG(torch.optim.Optimizer):
                 grad = p.grad.data
 
                 # update x_k and x_ag_k
-                x_k = x_k_minus1 - self.lambda_k * grad
-                x_ag_k = x_ag_k_minus1 - self.beta_k * grad
+                with torch.no_grad():
+                    x_k = x_k_minus1 - self.lambda_k * grad
+                    x_ag_k = x_md_k - self.beta_k * grad
 
                 # update state
                 state['x_k'] = x_k.clone()
