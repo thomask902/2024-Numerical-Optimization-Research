@@ -50,7 +50,7 @@ def main():
     # FOR GENERATED .pt DATASETS
 
     # load in dataset
-    data = torch.load(f'generated_data/n_2000_m_4000.pt')
+    data = torch.load(f'generated_data/n_2000_m_1000_balanced.pt')
     features = data['features']
     inputDim = features.shape[1]
     labels = data['labels'].unsqueeze(1).float()
@@ -126,7 +126,7 @@ def main():
             sample_j = samples_data[j]
             diff = torch.norm(sample_i - sample_j)
 
-            lip = hvp_diff.item() / diff.item()
+            lip = hvp_diff.item() / (diff.item() + 0.00001)
 
             L.append(lip)
 

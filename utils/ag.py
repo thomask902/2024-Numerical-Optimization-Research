@@ -22,7 +22,7 @@ class AG(torch.optim.Optimizer):
         self.beta_k = 1.0 / (2.0 * self.lipschitz)
         self.alpha_k = 1.0
         if self.convex:
-            self.lambda_k = self.beta_k / 2.0
+            self.lambda_k = (self.beta_k / 2.0)
         else:
             self.lambda_k = self.beta_k
 
@@ -54,6 +54,9 @@ class AG(torch.optim.Optimizer):
 
     # uses closure as argument, calling it internally multiple times as needed, this is why closure is used
     def step(self, closure=None):
+
+        # TESTING
+        #print(f'Alpha k: {self.alpha_k}, Beta k: {self.beta_k}, Lambda k: {self.lambda_k}')
 
         if closure:
             get_grad = closure

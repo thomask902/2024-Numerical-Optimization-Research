@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from utils.gnom import GNOM
 from utils.ag import AG
+from utils.gnom_manual import GNOM_manual
 import argparse
 import os
 from datetime import datetime
@@ -16,7 +17,7 @@ import sys
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Support Vector Machine Training')
 
-parser.add_argument('--optimizer', default='GD', help='Choose from GD, AG, or GNOM')
+parser.add_argument('--optimizer', default='GD', help='Choose from GD, AG, GNOM_manual or GNOM')
 parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
 parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate', dest='lr')
 parser.add_argument('--gpu', default=False, type=bool, help='Set to true to train with GPU.')
@@ -47,11 +48,12 @@ def main():
     args = parser.parse_args()
 
     # for generated dataset
-    data_name = f'n_{args.n}_m_{args.m}'
+    data_name = f'n_{args.n}_m_{args.m}_balanced'
 
     # lipchitz values based on dataset and loss
     lipschitz_dict = {
-        "n_2000_m_1000": {"hinge": 87.09, "sigmoid": 0.044}
+        "n_2000_m_1000": {"hinge": 87.09, "sigmoid": 0.044},
+        "n_2000_m_1000_balanced": {"sigmoid": 0.041}
     }
 
     # setting output location
@@ -126,6 +128,8 @@ def main():
         optimizer = base_optimizer
     elif args.optimizer == "GNOM":
         optimizer = GNOM(params=model.parameters(), base_optimizer=base_optimizer, model=model)
+    elif args.optimizer == "GNOM_manual":
+        optimizer = GNOM_manual(params=model.parameters(), base_optimizer=base_optimizer, model=model, args=args)
     elif args.optimizer == "AG":
         lipschitz = lipschitz_dict[data_name][args.loss]
         optimizer = AG(params=model.parameters(), base_optimizer=base_optimizer, model=model, loss_type=args.loss, lipschitz=lipschitz)
