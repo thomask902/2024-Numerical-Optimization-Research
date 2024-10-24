@@ -17,7 +17,7 @@ import sys
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Support Vector Machine Training')
 
-parser.add_argument('--optimizer', default='GD', help='Choose from GD, AG, GNOM_manual or GNOM')
+parser.add_argument('--optimizer', default='GD', help='Choose from GD, AG, AG_reg, GNOM_manual or GNOM')
 parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
 parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate', dest='lr')
 parser.add_argument('--gpu', default=False, type=bool, help='Set to true to train with GPU.')
@@ -48,13 +48,16 @@ def main():
     args = parser.parse_args()
 
     # for generated dataset
-    data_name = f'n_{args.n}_m_{args.m}_balanced'
+    data_name = f'n_{args.n}_m_{args.m}'
 
-    # lipchitz values based on dataset and loss
-    lipschitz_dict = {
-        "n_2000_m_1000": {"hinge": 87.09, "sigmoid": 0.044},
-        "n_2000_m_1000_balanced": {"sigmoid": 0.041}
+    # Gradient of loss (NOT GNOM) lipchitz values based on dataset and loss
+    lipschitz_dict = { # point-by-point approximation
+        "n_2000_m_1000": {"hinge": 2.066, "sigmoid": 0.258}
     }
+
+    #lipschitz_dict = { # hessian eigenvalue approximation
+    #    "n_2000_m_1000": {"hinge": 5.15, "sigmoid": 0.0113}
+    #}
 
     # setting output location
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
@@ -132,7 +135,10 @@ def main():
         optimizer = GNOM_manual(params=model.parameters(), base_optimizer=base_optimizer, model=model, args=args)
     elif args.optimizer == "AG":
         lipschitz = lipschitz_dict[data_name][args.loss]
-        optimizer = AG(params=model.parameters(), base_optimizer=base_optimizer, model=model, loss_type=args.loss, lipschitz=lipschitz)
+        optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz)
+    elif args.optimizer == "AG_reg":
+        lipschitz = lipschitz_dict[data_name][args.loss] + 1.0 / args.m
+        optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz, reg=True, args=args)
     else:
         raise ValueError("Please enter a valid optimizer!")
 
@@ -206,7 +212,7 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
     optimizer.zero_grad()
     all_inputs = train_loader.dataset.tensors[0].to(device)
     all_labels = train_loader.dataset.tensors[1].to(device)
-    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False)
+    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, disable_reg=True)
     train_grad_norm = optimizer.calc_grad_norm()
     optimizer.zero_grad()
 
@@ -273,17 +279,13 @@ def evaluate(model, test_loader, criterion, device):
         
     test_loss = loss.item()
 
-    # === Compute gradient norm over the entire test dataset ===
+    # compute gradient norm over the entire test dataset
     model.zero_grad()
-    # Perform forward pass again to compute gradients
     all_outputs = model(all_inputs)
     total_dataset_loss = criterion(all_outputs, all_labels)
-    # Backward pass to compute gradients
     total_dataset_loss.backward()
-    # Compute gradient norm
     test_grad_norm = get_grad_norm(model)
     model.zero_grad()
-    # === End of gradient norm computation ===
 
     return test_loss, test_grad_norm, acc
 

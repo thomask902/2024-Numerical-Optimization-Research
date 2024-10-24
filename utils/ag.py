@@ -2,12 +2,11 @@ import torch
 
 class AG(torch.optim.Optimizer):
 
-    def __init__(self, params, base_optimizer, model, loss_type, lipschitz, args=None):
+    def __init__(self, params, model, loss_type, lipschitz, reg=False, args=None):
         defaults = dict()
         super(AG, self).__init__(params, defaults)
 
         self.model = model
-        self.base_optimizer = base_optimizer
 
         # loss
         self.loss_type = loss_type
@@ -25,6 +24,7 @@ class AG(torch.optim.Optimizer):
             self.lambda_k = (self.beta_k / 2.0)
         else:
             self.lambda_k = self.beta_k
+        self.reg = reg
 
         # other parameters if needed
         self.args = args
@@ -40,14 +40,25 @@ class AG(torch.optim.Optimizer):
             self.lambda_k = (2.0 * current_lambda + self.beta_k) / 2.0
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
-    def set_closure(self, loss_fn, inputs, targets, create_graph=True, **kwargs):
+    def set_closure(self, loss_fn, inputs, targets, disable_reg=False, **kwargs):
 
         def get_grad():
             self.zero_grad()
             outputs = self.model(inputs)
             loss = loss_fn(outputs, targets, **kwargs)
+
+            if self.reg and not disable_reg:
+                # Add L2 regularization term
+                lambda_reg = 1.0 / self.args.m
+                # print(f"m = {self.args.m}, lambda (reg) = {lambda_reg}")
+                l2_reg = torch.tensor(0.0, device=loss.device)
+                for param in self.model.parameters():
+                    l2_reg += torch.norm(param, 2) ** 2
+                # print(f"Regularization Weight Added = {(lambda_reg / 2) * l2_reg}")
+                loss += (lambda_reg / 2) * l2_reg
+
             loss_value = loss.data.clone().detach()
-            loss.backward(create_graph = create_graph)
+            loss.backward(create_graph = False)
             return outputs, loss_value
 
         self.forward_backward_func = get_grad
@@ -137,7 +148,6 @@ class AG(torch.optim.Optimizer):
     def __repr__(self):
         return (
             f"Model: {repr(self.model)} \n"
-            f"Base Optimizer: {repr(self.base_optimizer)} \n"
             f"Loss Function: {self.args.loss} \n"
             f"Loss function convex: {self.convexity} \n"
             f"Lipschitz Constant of Loss Function: {self.args.lipschitz}"
