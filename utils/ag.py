@@ -40,7 +40,7 @@ class AG(torch.optim.Optimizer):
             self.lambda_k = (2.0 * current_lambda + self.beta_k) / 2.0
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
-    def set_closure(self, loss_fn, inputs, targets, disable_reg=False, **kwargs):
+    def set_closure(self, loss_fn, inputs, targets, create_graph=True, disable_reg=False, **kwargs):
 
         def get_grad():
             self.zero_grad()
@@ -58,7 +58,7 @@ class AG(torch.optim.Optimizer):
                 loss += (lambda_reg / 2) * l2_reg
 
             loss_value = loss.data.clone().detach()
-            loss.backward(create_graph = False)
+            loss.backward(create_graph =create_graph)
             return outputs, loss_value
 
         self.forward_backward_func = get_grad

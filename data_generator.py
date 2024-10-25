@@ -1,14 +1,11 @@
 import torch
 
-n = 8000 # number of features
-m = 10000 # number of samples
-
+n = 2000  # number of features
+m = 10000  # number of training samples
 k = int(0.05 * n)  # number of non-zero components
-a = 1.0  # norm constraint for x
 
-# generate x with norm ≤ a
-x_bar = torch.randn(n)
-x_bar = x_bar / x_bar.norm() * a
+# Load the saved x_bar
+x_bar = torch.load('generated_data/x_bar.pt')
 
 features = []
 labels = []
@@ -24,7 +21,7 @@ for _ in range(m):
     s_i = torch.dot(x_bar, u_i)
 
     # assign label based on sign
-    v_i = 1 if s_i > 0 else 0  
+    v_i = 1 if s_i > 0 else -1  
 
     features.append(u_i)
     labels.append(v_i)
@@ -36,7 +33,7 @@ print(f"Features Shape: {features.shape}")
 print(f"Labels Shape: {labels.shape}")
 
 # train data
-# torch.save({'features': features, 'labels': labels}, f'generated_data/n_{n}_m_{m}.pt')
+#torch.save({'features': features, 'labels': labels}, f'generated_data/n_{n}_m_{m}.pt')
 
 # test data
 torch.save({'features': features, 'labels': labels}, f'generated_data/n_{n}_test.pt')

@@ -51,13 +51,10 @@ def main():
     data_name = f'n_{args.n}_m_{args.m}'
 
     # Gradient of loss (NOT GNOM) lipchitz values based on dataset and loss
-    lipschitz_dict = { # point-by-point approximation
-        "n_2000_m_1000": {"hinge": 2.066, "sigmoid": 0.258}
+    lipschitz_dict = { 
+        "n_2000_m_1000": {"hinge": 2.066, "sigmoid": 0.258} # point-by-point approximation
+        # "n_2000_m_1000": {"hinge": 5.15, "sigmoid": 0.0113} # hessian eigenvalue approximation
     }
-
-    #lipschitz_dict = { # hessian eigenvalue approximation
-    #    "n_2000_m_1000": {"hinge": 5.15, "sigmoid": 0.0113}
-    #}
 
     # setting output location
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
@@ -81,14 +78,12 @@ def main():
     train_features = train_data['features']
     input_dim = train_features.shape[1]
     train_labels = train_data['labels'].unsqueeze(1).float()
-    train_labels[train_labels == 0] = -1 # added for SVM model
     train_dataset = TensorDataset(train_features, train_labels)
 
     # load in test dataset
     test_data = torch.load(f'generated_data/n_{args.n}_test.pt')
     test_features = test_data['features']
     test_labels = test_data['labels'].unsqueeze(1).float()
-    test_labels[test_labels == 0] = -1 # added for SVM model
     test_dataset = TensorDataset(test_features, test_labels)
 
     # set batch_size for loaders
