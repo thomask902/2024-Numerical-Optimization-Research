@@ -2,7 +2,7 @@ import torch
 
 class AG(torch.optim.Optimizer):
 
-    def __init__(self, params, model, loss_type, lipschitz, reg=False, args=None):
+    def __init__(self, params, model, loss_type, lipschitz, reg=0.0, args=None):
         defaults = dict()
         super(AG, self).__init__(params, defaults)
 
@@ -40,25 +40,24 @@ class AG(torch.optim.Optimizer):
             self.lambda_k = (2.0 * current_lambda + self.beta_k) / 2.0
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
-    def set_closure(self, loss_fn, inputs, targets, create_graph=True, disable_reg=False, **kwargs):
+    def set_closure(self, loss_fn, inputs, targets, create_graph=True, enable_reg=True, **kwargs):
 
         def get_grad():
             self.zero_grad()
             outputs = self.model(inputs)
             loss = loss_fn(outputs, targets, **kwargs)
 
-            if self.reg and not disable_reg:
+            if self.reg != 0.0 and enable_reg:
                 # Add L2 regularization term
-                lambda_reg = 1.0 / self.args.m
-                # print(f"m = {self.args.m}, lambda (reg) = {lambda_reg}")
+                #print(f"m = {self.args.m}, lambda (reg) = {self.reg}")
                 l2_reg = torch.tensor(0.0, device=loss.device)
                 for param in self.model.parameters():
                     l2_reg += torch.norm(param, 2) ** 2
-                # print(f"Regularization Weight Added = {(lambda_reg / 2) * l2_reg}")
-                loss += (lambda_reg / 2) * l2_reg
+                #print(f"Regularization Weight Added = {(self.reg / 2) * l2_reg}")
+                loss += (self.reg / 2) * l2_reg
 
             loss_value = loss.data.clone().detach()
-            loss.backward(create_graph =create_graph)
+            loss.backward(create_graph=create_graph)
             return outputs, loss_value
 
         self.forward_backward_func = get_grad
@@ -125,10 +124,27 @@ class AG(torch.optim.Optimizer):
                 # set model paramters to x_k
                 p.data.copy_(x_k)
 
+                # track difference between x_bar and x_k and x_ag_k
+                if(len(p.shape) == 2):
+                    # load in x_bar for comparisons
+                    x_bar = torch.load("generated_data/x_bar.pt")
+
+                    # squeeze x_k
+                    x_k2 = x_k.clone().squeeze()
+                    x_ag_k2 = x_ag_k.clone().squeeze()
+
+                    # compare
+                    x_k_diff = torch.norm(x_bar - x_k2).item()
+                    x_ag_k_diff = torch.norm(x_bar - x_ag_k2).item()
+                    #x_k_diff = torch.dot(x_bar, x_k2).item()
+                    #x_ag_k_diff = torch.dot(x_bar, x_ag_k2).item()
+
+
+
         # set "k = k+1" by updating parameters (last step)
         self.update_k()
 
-        return outputs, loss_value, grad_norm
+        return outputs, loss_value, grad_norm, x_k_diff, x_ag_k_diff
     
     def grad_norm(self):
         grad_norm = 0
@@ -142,7 +158,10 @@ class AG(torch.optim.Optimizer):
     def calc_grad_norm(self):
         outputs, loss_value = self.forward_backward_func()
         grad_norm = self.grad_norm()
-        return grad_norm
+        return loss_value, grad_norm
+
+    def zero_grad(self):
+        super().zero_grad(set_to_none=False)
 
 
     def __repr__(self):

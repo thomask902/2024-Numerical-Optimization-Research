@@ -76,7 +76,7 @@ class GNOM(torch.optim.Optimizer):
         return grad_norm
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
-    def set_closure(self, loss_fn, inputs, targets, create_graph=True, disable_reg=False, **kwargs):
+    def set_closure(self, loss_fn, inputs, targets, create_graph=True, enable_reg=False, **kwargs):
         # create self.forward_backward_func, which is a function such that
         # self.forward_backward_func() automatically performs forward and backward passes.
 

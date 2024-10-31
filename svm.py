@@ -52,9 +52,13 @@ def main():
 
     # Gradient of loss (NOT GNOM) lipchitz values based on dataset and loss
     lipschitz_dict = { 
-        "n_2000_m_1000": {"hinge": 2.066, "sigmoid": 0.258} # point-by-point approximation
+        "n_2000_m_1000": {"hinge": 2.066, "sigmoid": 0.310} # point-by-point approximation
         # "n_2000_m_1000": {"hinge": 5.15, "sigmoid": 0.0113} # hessian eigenvalue approximation
     }
+
+    # regularization weight
+
+    regularizer = 0.1
 
     # setting output location
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
@@ -132,8 +136,8 @@ def main():
         lipschitz = lipschitz_dict[data_name][args.loss]
         optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz)
     elif args.optimizer == "AG_reg":
-        lipschitz = lipschitz_dict[data_name][args.loss] + 1.0 / args.m
-        optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz, reg=True, args=args)
+        lipschitz = lipschitz_dict[data_name][args.loss] + regularizer
+        optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz, reg=regularizer, args=args)
     else:
         raise ValueError("Please enter a valid optimizer!")
 
@@ -149,16 +153,21 @@ def main():
             print(f"Epoch {epoch} underway {spaces}\\(*_*)/")
             spaces += "  "
         
+        total_loss = 0.0
         train_loss = 0.0
         train_grad_norm = 0.0
         train_time = 0.0
         test_loss = 0.0
+        x_k_diff = 0.0
+        x_ag_k_diff = 0.0
 
         # train model for epoch
         if args.optimizer == "GD":
             train_loss, train_grad_norm, train_time = train_epoch_base(model, optimizer, train_loader, device, criterion)
+        elif args.optimizer == "AG" or args.optimizer == "AG_reg":
+            total_loss, train_loss, train_grad_norm, train_time, x_k_diff, x_ag_k_diff = train_epoch_closure_ag(model, optimizer, train_loader, device, criterion)
         else:
-            train_loss, train_grad_norm, train_time = train_epoch_closure(model, optimizer, train_loader, device, criterion)
+            total_loss, train_loss, train_grad_norm, train_time = train_epoch_closure(model, optimizer, train_loader, device, criterion)
 
         # evaluate model after training
         test_loss, test_grad_norm, accuracy = evaluate(model, test_loader, criterion, device)
@@ -166,12 +175,15 @@ def main():
         epoch_stats.append({
             "Epoch": epoch,
             "Training Loss": train_loss,
+            "Total Training Loss": total_loss,
             "Training Gradient Norm": train_grad_norm,
             "Training Time (s)": train_time,
             "Test Loss": test_loss,
             "Test Gradient Norm": test_grad_norm,
             "Test Accuracy": accuracy,
-            "Test Error": 1 - accuracy
+            "Test Error": 1 - accuracy,
+            "x_k Comparison": x_k_diff,
+            "x_ag_k Comparison": x_ag_k_diff
         })
 
     # print and save results of run
@@ -201,17 +213,50 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
         #    print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
 
     end_time = time.time()
-    train_loss = total_loss/len(train_loader)
+    total_loss = total_loss/len(train_loader)
 
     # Compute gradient norm over the entire training dataset
     optimizer.zero_grad()
     all_inputs = train_loader.dataset.tensors[0].to(device)
     all_labels = train_loader.dataset.tensors[1].to(device)
-    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, disable_reg=True)
-    train_grad_norm = optimizer.calc_grad_norm()
+    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, enable_reg=False)
+    train_loss, train_grad_norm = optimizer.calc_grad_norm()
     optimizer.zero_grad()
 
-    return train_loss, train_grad_norm, (end_time - start_time)
+    return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time)
+
+def train_epoch_closure_ag(model, optimizer, train_loader, device, criterion):
+    start_time = time.time()
+    model.train()  # Set model to training mode
+
+    total_loss = 0
+    for batch_idx, (inputs, labels) in enumerate(train_loader):
+        inputs, labels = inputs.to(device), labels.to(device)
+        
+        optimizer.zero_grad()
+
+        # calls set_closure from optimizer to set up GNOM with information
+        optimizer.set_closure(criterion, inputs, labels)
+
+        # calls step() from GNOM to use info from closure to run steps
+        predictions, loss, grad_norm, x_k_diff, x_ag_k_diff = optimizer.step()
+        
+        total_loss += loss.item()
+        #if (batch_idx + 1) % 100 == 0:
+        #    print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
+
+    end_time = time.time()
+    total_loss = total_loss/len(train_loader)
+
+    # Compute gradient norm over the entire training dataset
+    optimizer.zero_grad()
+    all_inputs = train_loader.dataset.tensors[0].to(device)
+    all_labels = train_loader.dataset.tensors[1].to(device)
+    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, enable_reg=False)
+    train_loss, train_grad_norm = optimizer.calc_grad_norm()
+    optimizer.zero_grad()
+
+    return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time), x_k_diff, x_ag_k_diff
 
 def train_epoch_base(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
@@ -272,12 +317,14 @@ def evaluate(model, test_loader, criterion, device):
         acc = float(num_correct) / float(all_labels.shape[0])
         loss = criterion(all_outputs, all_labels)
         
-    test_loss = loss.item()
+    
 
     # compute gradient norm over the entire test dataset
+    model.train()
     model.zero_grad()
     all_outputs = model(all_inputs)
     total_dataset_loss = criterion(all_outputs, all_labels)
+    test_loss = total_dataset_loss.item()
     total_dataset_loss.backward()
     test_grad_norm = get_grad_norm(model)
     model.zero_grad()
