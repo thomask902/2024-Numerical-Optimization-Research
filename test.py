@@ -56,7 +56,7 @@ def main():
     margin = 1 - outputs * labels
     print("Margin (1 - outputs * labels):", margin)
 
-    # Step 2: Apply clamping to ensure positive values (hinge loss behavior)
+    # Step 2: Apply clamping to ensure positive val72ues (hinge loss behavior)
     clamped = torch.clamp(margin, min=0)
     print("Clamped (torch.clamp(margin, min=0)):", clamped)
 

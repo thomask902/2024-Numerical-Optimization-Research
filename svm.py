@@ -82,23 +82,16 @@ def main():
 
 
     # load in train dataset
-    #train_data = torch.load(f'generated_data/{data_name}.pt')
-    #train_features = train_data['features']
-    train_features = torch.tensor([[1.0, -4.0]], dtype=torch.double)
-    #train_features = torch.tensor([[2.0, 1.0]], dtype=torch.float32)
-    print(f"Train feats: {train_features.shape}")
+    train_data = torch.load(f'generated_data/{data_name}.pt')
+    train_features = train_data['features']
     input_dim = train_features.shape[1]
-    # train_labels = train_data['labels'].unsqueeze(1).float()
-    train_labels = torch.tensor([-1.0], dtype=torch.double)
-    #train_labels = torch.tensor([1.0])
+    train_labels = train_data['labels'].unsqueeze(1).float()
     train_dataset = TensorDataset(train_features, train_labels)
 
     # load in test dataset
-    #test_data = torch.load(f'generated_data/n_{args.n}_test.pt')
-    #test_features = test_data['features']
-    #test_labels = test_data['labels'].unsqueeze(1).float()
-    test_features = torch.tensor([[2.0, 1.0]], dtype=torch.double)
-    test_labels = torch.tensor([1.0], dtype=torch.double)
+    test_data = torch.load(f'generated_data/n_{args.n}_test.pt')
+    test_features = test_data['features']
+    test_labels = test_data['labels'].unsqueeze(1).float()
     test_dataset = TensorDataset(test_features, test_labels)
 
     # set batch_size for loaders
@@ -121,11 +114,6 @@ def main():
 
     # linear model for SVM
     model = nn.Linear(in_features=input_dim, out_features=1, bias=False)
-    
-    # for manual testing
-    weights = torch.tensor([1.0, -1.0], dtype=torch.float32)
-    with torch.no_grad():
-        model.weight.copy_(weights)
 
     device = torch.device('cuda' if args.gpu else 'cpu')
     model.to(device)
