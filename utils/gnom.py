@@ -122,7 +122,7 @@ class GNOM(torch.optim.Optimizer):
     def calc_grad_norm(self):
         outputs, loss_value = self.forward_backward_func()
         grad_norm = self.grad_norm()
-        return grad_norm
+        return loss_value, grad_norm
 
     def zero_grad(self, set_to_none: bool = False):
         self.base_optimizer.zero_grad(set_to_none)

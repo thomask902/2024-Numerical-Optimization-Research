@@ -1,18 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset, random_split
+from torch.utils.data import DataLoader, TensorDataset
 import time
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from utils.gnom import GNOM
 from utils.ag import AG
 from utils.gnom_manual import GNOM_manual
 import argparse
 import os
 from datetime import datetime
-import sys
 
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Support Vector Machine Training')
@@ -35,10 +32,6 @@ class Squared_Hinge_Loss(nn.Module):
     def __init__(self):
         super(Squared_Hinge_Loss,self).__init__()
     def forward(self, outputs, labels): 
-        print("Hinge loss calcs:")
-        print(1 - outputs * labels)
-        print(torch.clamp(1 - outputs * labels, min=0))
-        print((torch.clamp(1 - outputs * labels, min=0)) ** 2)
         return torch.mean((torch.clamp(1 - outputs * labels, min=0)) ** 2)  
 
 class Sigmoid_Loss(nn.Module):    
@@ -167,11 +160,11 @@ def main():
 
         # train model for epoch
         if args.optimizer == "GD":
-            train_loss, train_grad_norm, train_time = train_epoch_base(model, optimizer, train_loader, device, criterion)
+            train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_base(model, optimizer, train_loader, device, criterion)
         elif args.optimizer == "AG" or args.optimizer == "AG_reg":
             total_loss, train_loss, train_grad_norm, train_time, x_k_diff, x_ag_k_diff = train_epoch_closure_ag(model, optimizer, train_loader, device, criterion)
         else:
-            total_loss, train_loss, train_grad_norm, train_time = train_epoch_closure(model, optimizer, train_loader, device, criterion)
+            total_loss, train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_closure(model, optimizer, train_loader, device, criterion)
 
         # evaluate model after training
         test_loss, test_grad_norm, accuracy = evaluate(model, test_loader, criterion, device)
@@ -219,6 +212,12 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
     end_time = time.time()
     total_loss = total_loss/len(train_loader)
 
+    # track difference between x_bar and x_k
+    for p in model.parameters():
+        x_bar = torch.load("generated_data/x_bar.pt")
+        x_k = p.data.clone().squeeze()
+        x_k_diff = torch.norm(x_bar - x_k).item()
+
     # Compute gradient norm over the entire training dataset
     optimizer.zero_grad()
     all_inputs = train_loader.dataset.tensors[0].to(device)
@@ -227,7 +226,7 @@ def train_epoch_closure(model, optimizer, train_loader, device, criterion):
     train_loss, train_grad_norm = optimizer.calc_grad_norm()
     optimizer.zero_grad()
 
-    return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time)
+    return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time), x_k_diff
 
 def train_epoch_closure_ag(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
@@ -270,8 +269,6 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
 
     for batch_idx, (inputs, labels) in enumerate(train_loader):
         inputs, labels = inputs.to(device), labels.to(device)
-
-        print(f'Features: {inputs[0]}, Label: {labels[0]}')
         
         optimizer.zero_grad()
 
@@ -284,21 +281,21 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
         # backward pass
         loss.backward()
 
-        # outputting gradients for manual check
-        
-        for p in model.parameters():
-            print(f'{p}, gradient: {p.grad.data}')
-
         optimizer.step()
         
         total_loss += loss.item()
-        print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
         #if (batch_idx + 1) % 100 == 0:
         #    print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
 
 
     end_time = time.time()
     train_loss = total_loss / len(train_loader)
+
+    # track difference between x_bar and x_k
+    for p in model.parameters():
+        x_bar = torch.load("generated_data/x_bar.pt")
+        x_k = p.data.clone().squeeze()
+        x_k_diff = torch.norm(x_bar - x_k).item()
 
     # compute gradient norm over the entire training dataset
     optimizer.zero_grad()
@@ -312,7 +309,7 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
 
     optimizer.zero_grad()
 
-    return train_loss, train_grad_norm, (end_time - start_time)
+    return train_loss, train_grad_norm, (end_time - start_time), x_k_diff
 
 def evaluate(model, test_loader, criterion, device):
     model.eval()  # Set model to evaluation mode
