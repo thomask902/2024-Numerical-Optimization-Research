@@ -35,6 +35,10 @@ class Squared_Hinge_Loss(nn.Module):
     def __init__(self):
         super(Squared_Hinge_Loss,self).__init__()
     def forward(self, outputs, labels): 
+        print("Hinge loss calcs:")
+        print(1 - outputs * labels)
+        print(torch.clamp(1 - outputs * labels, min=0))
+        print((torch.clamp(1 - outputs * labels, min=0)) ** 2)
         return torch.mean((torch.clamp(1 - outputs * labels, min=0)) ** 2)  
 
 class Sigmoid_Loss(nn.Module):    
@@ -78,16 +82,23 @@ def main():
 
 
     # load in train dataset
-    train_data = torch.load(f'generated_data/{data_name}.pt')
-    train_features = train_data['features']
+    #train_data = torch.load(f'generated_data/{data_name}.pt')
+    #train_features = train_data['features']
+    train_features = torch.tensor([[1.0, -4.0]], dtype=torch.double)
+    #train_features = torch.tensor([[2.0, 1.0]], dtype=torch.float32)
+    print(f"Train feats: {train_features.shape}")
     input_dim = train_features.shape[1]
-    train_labels = train_data['labels'].unsqueeze(1).float()
+    # train_labels = train_data['labels'].unsqueeze(1).float()
+    train_labels = torch.tensor([-1.0], dtype=torch.double)
+    #train_labels = torch.tensor([1.0])
     train_dataset = TensorDataset(train_features, train_labels)
 
     # load in test dataset
-    test_data = torch.load(f'generated_data/n_{args.n}_test.pt')
-    test_features = test_data['features']
-    test_labels = test_data['labels'].unsqueeze(1).float()
+    #test_data = torch.load(f'generated_data/n_{args.n}_test.pt')
+    #test_features = test_data['features']
+    #test_labels = test_data['labels'].unsqueeze(1).float()
+    test_features = torch.tensor([[2.0, 1.0]], dtype=torch.double)
+    test_labels = torch.tensor([1.0], dtype=torch.double)
     test_dataset = TensorDataset(test_features, test_labels)
 
     # set batch_size for loaders
@@ -109,7 +120,12 @@ def main():
     epochs = args.epochs
 
     # linear model for SVM
-    model = nn.Linear(input_dim, 1)
+    model = nn.Linear(in_features=input_dim, out_features=1, bias=False)
+    
+    # for manual testing
+    weights = torch.tensor([1.0, -1.0], dtype=torch.float32)
+    with torch.no_grad():
+        model.weight.copy_(weights)
 
     device = torch.device('cuda' if args.gpu else 'cpu')
     model.to(device)
@@ -266,6 +282,8 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
 
     for batch_idx, (inputs, labels) in enumerate(train_loader):
         inputs, labels = inputs.to(device), labels.to(device)
+
+        print(f'Features: {inputs[0]}, Label: {labels[0]}')
         
         optimizer.zero_grad()
 
@@ -278,9 +296,15 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
         # backward pass
         loss.backward()
 
+        # outputting gradients for manual check
+        
+        for p in model.parameters():
+            print(f'{p}, gradient: {p.grad.data}')
+
         optimizer.step()
         
         total_loss += loss.item()
+        print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
         #if (batch_idx + 1) % 100 == 0:
         #    print(f'Batch {batch_idx + 1}\'s loss is: {loss}')
 

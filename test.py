@@ -1,32 +1,89 @@
 import torch
 import torch.nn as nn
 from utils.ag import AG
+from torch.utils.data import DataLoader, TensorDataset, random_split
 
-# Define a simple neural network with one linear layer
-class SimpleNet(nn.Module):
+# defining the loss functions
+class Squared_Hinge_Loss(nn.Module):    
     def __init__(self):
-        super(SimpleNet, self).__init__()
-        self.fc = nn.Linear(3, 2)  # Simple linear layer: input dimension = 3, output dimension = 2
+        super(Squared_Hinge_Loss,self).__init__()
+    def forward(self, outputs, labels): 
+        print("Hinge loss calcs:")
+        print(1 - outputs * labels)
+        print(torch.clamp(1 - outputs * labels, min=0))
+        print((torch.clamp(1 - outputs * labels, min=0)) ** 2)
+        return torch.mean((torch.clamp(1 - outputs * labels, min=0)) ** 2)  
 
-    def forward(self, x):
-        return self.fc(x)
+class Sigmoid_Loss(nn.Module):    
+    def __init__(self):
+        super(Sigmoid_Loss,self).__init__()
+    def forward(self, outputs, labels):
+        return torch.mean(1 - torch.tanh(outputs * labels))
 
-# Initialize the model
-model = SimpleNet()
+def main():
 
-# Create an instance of the optimizer with some basic configurations
-base_optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+    '''
+    train_features = torch.tensor([[1.0, -4.0]], dtype=torch.double)
+    input_dim = train_features.shape[1]
+    train_labels = torch.tensor([-1.0], dtype=torch.double)
+    train_dataset = TensorDataset(train_features, train_labels)
 
-# Define dummy arguments needed for the GNOM_noised optimizer
-class Args:
-    loss = "hinge" 
-    lipschitz = 70  
+    test_features = torch.tensor([[2.0, 1.0]], dtype=torch.double)
+    test_labels = torch.tensor([1.0], dtype=torch.double)
+    test_dataset = TensorDataset(test_features, test_labels)
+    
+    train_loader = DataLoader(dataset=train_dataset, batch_size=1, shuffle=True)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=1, shuffle=False)
+    '''
 
-args = Args()
+    # linear model for SVM
+    model = nn.Linear(in_features=2, out_features=1, bias=False).double()
+    
+    # for manual testing
+    weights = torch.tensor([1.0, -1.0], dtype=torch.double)
+    with torch.no_grad():
+        model.weight.copy_(weights)
 
-# Create the custom GNOM_noised optimizer
-optimizer = AG(model.parameters(), base_optimizer, model, args=args)
-print(repr(optimizer))
+    # Define inputs and labels with requires_grad=True
+    inputs = torch.tensor([[1.0, -4.0]], requires_grad=True, dtype=torch.double)
+    labels = torch.tensor([-1.0], dtype=torch.double)
+
+    # Forward pass through the model to get outputs
+    outputs = model(inputs)
+    print("Outputs:", outputs)
+
+    # Step 1: Calculate the margin
+    margin = 1 - outputs * labels
+    print("Margin (1 - outputs * labels):", margin)
+
+    # Step 2: Apply clamping to ensure positive values (hinge loss behavior)
+    clamped = torch.clamp(margin, min=0)
+    print("Clamped (torch.clamp(margin, min=0)):", clamped)
+
+    # Step 3: Square the clamped margin
+    squared_clamped = clamped ** 2
+    print("Squared Clamped (clamped ** 2):", squared_clamped)
+
+    # Step 4: Take the mean to get the final loss
+    loss = torch.mean(squared_clamped)
+    print("Loss (torch.mean(squared_clamped)):", loss)
+
+    # Compute gradients for intermediate tensors
+    grad_squared_clamped = torch.autograd.grad(loss, squared_clamped, retain_graph=True)
+    print("Gradient w.r.t. squared_clamped:", grad_squared_clamped)
+
+    grad_clamped = torch.autograd.grad(loss, clamped, retain_graph=True)
+    print("Gradient w.r.t. clamped tensor:", grad_clamped)
+
+    grad_margin = torch.autograd.grad(loss, margin, retain_graph=True)
+    print("Gradient w.r.t. margin tensor:", grad_margin)
+
+    grad_outputs = torch.autograd.grad(loss, outputs, retain_graph=True)
+    print("Gradient w.r.t. outputs tensor:", grad_outputs)
+
+if __name__ == '__main__':
+    main()
+
 
 ''' TO TEST OPTIMIZER
 

@@ -127,7 +127,8 @@ class AG(torch.optim.Optimizer):
                 # track difference between x_bar and x_k and x_ag_k
                 if(len(p.shape) == 2):
                     # load in x_bar for comparisons
-                    x_bar = torch.load("generated_data/x_bar.pt")
+                    #x_bar = torch.load("generated_data/x_bar.pt")
+                    x_bar = torch.tensor([1.0, 1.0])
 
                     # squeeze x_k
                     x_k2 = x_k.clone().squeeze()
