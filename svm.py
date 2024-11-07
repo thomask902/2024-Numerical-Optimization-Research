@@ -105,8 +105,12 @@ def main():
     learningRate = args.lr
     epochs = args.epochs
 
+
     # linear model for SVM
     model = nn.Linear(in_features=input_dim, out_features=1, bias=False)
+
+    # Initialize weights from a uniform distribution between -0.005 and 0.005
+    #nn.init.uniform_(model.weight, a=-0.001, b=0.001)
 
     device = torch.device('cuda' if args.gpu else 'cpu')
     model.to(device)
