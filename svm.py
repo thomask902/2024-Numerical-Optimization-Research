@@ -55,7 +55,7 @@ def main():
 
     # regularization weight
 
-    regularizer = 0.1
+    regularizer = 1 / args.m
 
     # setting output location
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
@@ -135,7 +135,7 @@ def main():
         optimizer = GNOM_manual(params=model.parameters(), base_optimizer=base_optimizer, model=model, args=args)
     elif args.optimizer == "AG":
         lipschitz = lipschitz_dict[data_name][args.loss]
-        optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz)
+        optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz, stochastic=(args.batch_size > 0))
     elif args.optimizer == "AG_reg":
         lipschitz = lipschitz_dict[data_name][args.loss] + regularizer
         optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz, reg=regularizer, args=args)

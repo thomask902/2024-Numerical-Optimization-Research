@@ -2,7 +2,7 @@ import torch
 
 class AG(torch.optim.Optimizer):
 
-    def __init__(self, params, model, loss_type, lipschitz, reg=0.0, args=None):
+    def __init__(self, params, model, loss_type, lipschitz, reg=0.0, stochastic=False, args=None):
         defaults = dict()
         super(AG, self).__init__(params, defaults)
 
@@ -16,12 +16,22 @@ class AG(torch.optim.Optimizer):
         elif(self.loss_type == "sigmoid"):
             self.convex = False
 
+        # stochasticity
+        self.stochastic = stochastic
+
         # initial parameter values
         self.lipschitz = lipschitz
-        self.beta_k = 1.0 / (2.0 * self.lipschitz)
         self.alpha_k = 1.0
-        if self.convex:
+
+        if self.stochastic and not self.convex:
+            self.beta_k = 8.0 / (21.0 * self.lipschitz)
+        else:
+            self.beta_k = 1.0 / (2.0 * self.lipschitz)
+        
+        if self.convex and not self.stochastic:
             self.lambda_k = (self.beta_k / 2.0)
+        elif self.convex and self.stochastic:
+            self.lambda_k = (self.lipschitz * self.beta_k ** 2) / 2.0
         else:
             self.lambda_k = self.beta_k
         self.reg = reg
@@ -35,9 +45,12 @@ class AG(torch.optim.Optimizer):
         self.alpha_k = (2.0 * current_alpha) / (2 + current_alpha)
 
         # update lambda if needed
-        if self.convex:
+        if self.convex and not self.stochastic:
             current_lambda = self.lambda_k
             self.lambda_k = (2.0 * current_lambda + self.beta_k) / 2.0
+        elif self.convex and self.stochastic:
+            current_lambda = self.lambda_k
+            self.lambda_k = current_lambda + 0.5 * self.lipschitz * self.beta_k ** 2
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
     def set_closure(self, loss_fn, inputs, targets, create_graph=True, enable_reg=True, **kwargs):
