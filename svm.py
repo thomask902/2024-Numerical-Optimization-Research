@@ -14,7 +14,8 @@ from datetime import datetime
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Support Vector Machine Training')
 
-parser.add_argument('--optimizer', default='GD', help='Choose from GD, AG, AG_reg, GNOM_manual or GNOM')
+parser.add_argument('--optimizer', default='GD', choices=['GD', 'AG', 'AG_reg', 'GNOM_manual',
+                    'GNOM', 'mixed5', 'mixed10', 'mixed20', 'mixed50', 'mixed100'], help='Choose optimizer')
 parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
 parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate', dest='lr')
 parser.add_argument('--gpu', default=False, type=bool, help='Set to true to train with GPU.')
@@ -25,6 +26,14 @@ parser.add_argument('--n', default=2000, type=int, help='number of features in g
 parser.add_argument('--m', default=1000, type=int, help='number of examples in generated datset')
 parser.add_argument('--loss', default="hinge", type=str, help='enter hinge or sigmoid')
 parser.add_argument('--wd', default=0.0, type=float, help='weight decay, default is none')
+
+# arguments for AG and GNOM batch sizes and GNOM learning rate
+parser.add_argument('--ag-batch-size', default=None, type=int,
+                    help='Batch size for AG phase (default: same as --batch-size)')
+parser.add_argument('--gnom-batch-size', default=None, type=int,
+                    help='Batch size for GNOM phase (default: same as --batch-size)')
+parser.add_argument('--gnom-lr', default=None, type=float,
+                    help='Learning rate for GNOM phase (default: same as --lr)')
 
 
 # defining the loss functions
@@ -44,13 +53,27 @@ def main():
 
     args = parser.parse_args()
 
+    # Set default values if not provided
+    if args.ag_batch_size is None:
+        args.ag_batch_size = args.batch_size
+
+    if args.gnom_batch_size is None:
+        args.gnom_batch_size = args.batch_size
+
+    if args.gnom_lr is None:
+        args.gnom_lr = args.lr
+
     # for generated dataset
     data_name = f'n_{args.n}_m_{args.m}'
 
     # Gradient of loss (NOT GNOM) lipchitz values based on dataset and loss
     lipschitz_dict = { 
-        "n_2000_m_1000": {"hinge": 2.066, "sigmoid": 0.310} # point-by-point approximation
-        # "n_2000_m_1000": {"hinge": 5.15, "sigmoid": 0.0113} # hessian eigenvalue approximation
+        "n_2000_m_1000": {
+            "no_batching": {"hinge": 2.066, "sigmoid": 0.310},
+            "256": {"hinge": 2.5, "sigmoid": 0.32},
+            "128": {"hinge": 2.1, "sigmoid": 0.32},
+            "32": {"hinge": 7.6, "sigmoid": 0.45},
+        }
     }
 
     # regularization weight
@@ -88,18 +111,51 @@ def main():
     test_dataset = TensorDataset(test_features, test_labels)
 
     # set batch_size for loaders
-    batch_train = 0
-    batch_test = 0
-    if args.batch_size == 0:
-        print("Training Examples:", len(train_dataset))
-        batch_train = len(train_dataset)
-        batch_test = len(test_dataset)
+    batch_test = len(test_dataset)
+
+    if args.optimizer in ['mixed5', 'mixed10', 'mixed20', 'mixed50', 'mixed100']:
+        # Set batch sizes for AG and GNOM phases
+        if args.ag_batch_size == 0:
+            print("AG Phase - Training Examples:", len(train_dataset))
+            batch_train_ag = len(train_dataset)
+        else:
+            batch_train_ag = args.ag_batch_size
+
+        if args.gnom_batch_size == 0:
+            print("GNOM Phase - Training Examples:", len(train_dataset))
+            batch_train_gnom = len(train_dataset)
+        else:
+            batch_train_gnom = args.gnom_batch_size
+
+        # Create DataLoaders for AG and GNOM phases
+        train_loader_ag = DataLoader(
+            dataset=train_dataset, batch_size=batch_train_ag, num_workers=args.workers, shuffle=True)
+        train_loader_gnom = DataLoader(
+            dataset=train_dataset, batch_size=batch_train_gnom, num_workers=args.workers, shuffle=True)
+
+        # Determine batch titles for AG and GNOM phases
+        if batch_train_ag == len(train_dataset):
+            batch_title_ag = "no_batching"
+        else:
+            batch_title_ag = str(batch_train_ag)
+
+        if batch_train_gnom == len(train_dataset):
+            batch_title_gnom = "no_batching"
+        else:
+            batch_title_gnom = str(batch_train_gnom)
     else:
-        batch_train = args.batch_size
-        batch_test = args.batch_size
+        batch_train = 0
+        if args.batch_size == 0:
+            print("Training Examples:", len(train_dataset))
+            batch_train = len(train_dataset)
+        else:
+            batch_train = args.batch_size
+        
+        train_loader = DataLoader(dataset=train_dataset, batch_size=batch_train, num_workers=args.workers, shuffle=True)
     
-    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_train, num_workers=args.workers, shuffle=True)
     test_loader = DataLoader(dataset=test_dataset, batch_size=batch_test, num_workers=args.workers, shuffle=False)
+
+    
 
     # set up model
     learningRate = args.lr
@@ -134,11 +190,30 @@ def main():
     elif args.optimizer == "GNOM_manual":
         optimizer = GNOM_manual(params=model.parameters(), base_optimizer=base_optimizer, model=model, args=args)
     elif args.optimizer == "AG":
-        lipschitz = lipschitz_dict[data_name][args.loss]
+        lipschitz = lipschitz_dict[data_name][batch_title][args.loss]
+        print("Running with lipschitz =", lipschitz)
+        print("Stochastic?", (args.batch_size > 0))
         optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz, stochastic=(args.batch_size > 0))
     elif args.optimizer == "AG_reg":
-        lipschitz = lipschitz_dict[data_name][args.loss] + regularizer
+        lipschitz = lipschitz_dict[data_name][batch_title][args.loss] + regularizer
         optimizer = AG(params=model.parameters(), model=model, loss_type=args.loss, lipschitz=lipschitz, reg=regularizer, args=args)
+    elif args.optimizer in ['mixed5', 'mixed10', 'mixed20', 'mixed50', 'mixed100']:
+        # Extract number of AG epochs from optimizer name
+        ag_epochs = int(args.optimizer.replace('mixed', ''))
+        gnom_epochs = args.epochs - ag_epochs
+
+        # Set up AG optimizer
+        lipschitz = lipschitz_dict[data_name][batch_title_ag][args.loss]
+        print("Running AG with lipschitz =", lipschitz)
+        print("Stochastic?", (args.ag_batch_size > 0))
+        optimizer_ag = AG(params=model.parameters(), model=model, loss_type=args.loss,
+                          lipschitz=lipschitz, stochastic=(args.ag_batch_size > 0))
+
+        # Set up GNOM optimizer
+        base_optimizer_gnom = torch.optim.SGD(
+            model.parameters(), lr=args.gnom_lr, weight_decay=args.wd)
+        optimizer_gnom = GNOM(params=model.parameters(),
+                              base_optimizer=base_optimizer_gnom, model=model)
     else:
         raise ValueError("Please enter a valid optimizer!")
 
@@ -149,44 +224,131 @@ def main():
     epoch_stats = []
     spaces = ""
 
-    for epoch in range(1, epochs + 1):
-        if epoch % 10 == 0:
-            print(f"Epoch {epoch} underway {spaces}\\(*_*)/")
-            spaces += "  "
-        
-        total_loss = 0.0
-        train_loss = 0.0
-        train_grad_norm = 0.0
-        train_time = 0.0
-        test_loss = 0.0
-        x_k_diff = 0.0
-        x_ag_k_diff = 0.0
+    if args.optimizer in ['mixed5', 'mixed10', 'mixed20', 'mixed50', 'mixed100']:
+        # Training with AG for ag_epochs
+        print(f"Training with AG for {ag_epochs} epochs")
+        for epoch in range(1, ag_epochs + 1):
+            if epoch % 10 == 0:
+                print(f"Epoch {epoch} underway {spaces}\\(*_*)/")
+                spaces += "  "
 
-        # train model for epoch
-        if args.optimizer == "GD":
-            train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_base(model, optimizer, train_loader, device, criterion)
-        elif args.optimizer == "AG" or args.optimizer == "AG_reg":
-            total_loss, train_loss, train_grad_norm, train_time, x_k_diff, x_ag_k_diff = train_epoch_closure_ag(model, optimizer, train_loader, device, criterion)
-        else:
-            total_loss, train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_closure(model, optimizer, train_loader, device, criterion)
+            total_loss = 0.0
+            train_loss = 0.0
+            train_grad_norm = 0.0
+            train_time = 0.0
+            test_loss = 0.0
+            x_k_diff = 0.0
+            x_ag_k_diff = 0.0
 
-        # evaluate model after training
-        test_loss, test_grad_norm, accuracy = evaluate(model, test_loader, criterion, device)
+            # Train model for epoch using AG optimizer
+            total_loss, train_loss, train_grad_norm, train_time, x_k_diff, x_ag_k_diff = train_epoch_closure_ag(
+                model, optimizer_ag, train_loader_ag, device, criterion)
 
-        epoch_stats.append({
-            "Epoch": epoch,
-            "Training Loss": train_loss,
-            "Total Training Loss": total_loss,
-            "Training Gradient Norm": train_grad_norm,
-            "Training Time (s)": train_time,
-            "Test Loss": test_loss,
-            "Test Gradient Norm": test_grad_norm,
-            "Test Accuracy": accuracy,
-            "Test Error": 1 - accuracy,
-            "x_k Comparison": x_k_diff,
-            "x_ag_k Comparison": x_ag_k_diff
-        })
+            # Evaluate model after training
+            test_loss, test_grad_norm, accuracy = evaluate(
+                model, test_loader, criterion, device)
 
+            # Log stats
+            epoch_stats.append({
+                "Epoch": epoch,
+                "Phase": "AG",
+                "Training Loss": train_loss,
+                "Total Training Loss": total_loss,
+                "Training Gradient Norm": train_grad_norm,
+                "Training Time (s)": train_time,
+                "Test Loss": test_loss,
+                "Test Gradient Norm": test_grad_norm,
+                "Test Accuracy": accuracy,
+                "Test Error": 1 - accuracy,
+                "x_k Comparison": x_k_diff,
+                "x_ag_k Comparison": x_ag_k_diff
+            })
+
+        # Save model state after AG phase
+        ag_model_state = model.state_dict()
+
+        # Training with GNOM for remaining epochs
+        print(f"Training with GNOM for {gnom_epochs} epochs")
+        model.load_state_dict(ag_model_state)  # Optional, model is already in this state
+
+        for epoch in range(ag_epochs + 1, args.epochs + 1):
+            if epoch % 10 == 0:
+                print(f"Epoch {epoch} underway {spaces}\\(*_*)/")
+                spaces += "  "
+
+            total_loss = 0.0
+            train_loss = 0.0
+            train_grad_norm = 0.0
+            train_time = 0.0
+            test_loss = 0.0
+            x_k_diff = 0.0
+
+            # Train model for epoch using GNOM optimizer
+            total_loss, train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_closure(
+                model, optimizer_gnom, train_loader_gnom, device, criterion)
+
+            # Evaluate model after training
+            test_loss, test_grad_norm, accuracy = evaluate(
+                model, test_loader, criterion, device)
+
+            # Log stats
+            epoch_stats.append({
+                "Epoch": epoch,
+                "Phase": "GNOM",
+                "Training Loss": train_loss,
+                "Total Training Loss": total_loss,
+                "Training Gradient Norm": train_grad_norm,
+                "Training Time (s)": train_time,
+                "Test Loss": test_loss,
+                "Test Gradient Norm": test_grad_norm,
+                "Test Accuracy": accuracy,
+                "Test Error": 1 - accuracy,
+                "x_k Comparison": x_k_diff,
+                "x_ag_k Comparison": ""  # Empty since GNOM phase
+            })
+
+    else:
+        for epoch in range(1, epochs + 1):
+            if epoch % 10 == 0:
+                print(f"Epoch {epoch} underway {spaces}\\(*_*)/")
+                spaces += "  "
+
+            total_loss = 0.0
+            train_loss = 0.0
+            train_grad_norm = 0.0
+            train_time = 0.0
+            test_loss = 0.0
+            x_k_diff = 0.0
+            x_ag_k_diff = 0.0
+
+            # train model for epoch
+            if args.optimizer == "GD":
+                train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_base(
+                    model, optimizer, train_loader, device, criterion)
+            elif args.optimizer == "AG" or args.optimizer == "AG_reg":
+                total_loss, train_loss, train_grad_norm, train_time, x_k_diff, x_ag_k_diff = train_epoch_closure_ag(
+                    model, optimizer, train_loader, device, criterion)
+            else:
+                total_loss, train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_closure(
+                    model, optimizer, train_loader, device, criterion)
+
+            # evaluate model after training
+            test_loss, test_grad_norm, accuracy = evaluate(
+                model, test_loader, criterion, device)
+
+            epoch_stats.append({
+                "Epoch": epoch,
+                "Training Loss": train_loss,
+                "Total Training Loss": total_loss,
+                "Training Gradient Norm": train_grad_norm,
+                "Training Time (s)": train_time,
+                "Test Loss": test_loss,
+                "Test Gradient Norm": test_grad_norm,
+                "Test Accuracy": accuracy,
+                "Test Error": 1 - accuracy,
+                "x_k Comparison": x_k_diff,
+                "x_ag_k Comparison": x_ag_k_diff
+            })
     # print and save results of run
     df_stats = pd.DataFrame(epoch_stats)
     df_stats.to_csv(log_path, index=False)
