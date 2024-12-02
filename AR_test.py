@@ -1,3 +1,4 @@
+from functools import _make_key
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -45,7 +46,7 @@ def evaluate(model, test_loader, criterion, device):
 def main():
     # fixed hyperparameters
     S = 5
-    learning_rate = 0.01
+    learning_rate = 0.001
     batch_size = 1000
     input_dim = 2000
     train_size = 1000
@@ -92,16 +93,15 @@ def main():
     # optimizer = AG(params=model.parameters(), model=model, loss_type="hinge", lipschitz=lipschitz_dict["n_2000_m_1000"]["no_batching"]["sigmoid"], stochastic=False)
 
     # Set initial parameters for subproblems
-    param_list = [param.clone().detach() for param in model.parameters()]
-    if len(param_list) == 1:
-        x_prev = param_list[0]
+    if len(list(model.parameters())) == 1:
+        x_prev = next(iter(model.parameters()))
     else:
         raise RuntimeError("Optimizer can only run on basic models")
-    x_bar_prev = x_prev.clone()
+    x_bar_prev = x_prev.clone().detach()
     sigma_prev = 0.0
     m_prev = lipschitz_dict["n_2000_m_1000"]["no_batching"]["hinge"]
     # m_prev = lipchitz_dict["n_2000_m_1000"]["no_batching"]["sigmoid"]
-    sigma_1 = m_prev / 10.0  # this is a guess, not sure
+    sigma_1 = m_prev / 100.0  # this is a guess, not sure
 
     # Print initial parameters
     print(f"Initial Parameters:")
@@ -124,7 +124,7 @@ def main():
         gamma_s = 1.0 - sigma_prev / sigma_s
 
         # new point center
-        x_bar_s = (1.0 - gamma_s) * x_bar_prev + gamma_s * x_prev
+        x_bar_s = ((1.0 - gamma_s) * x_bar_prev + gamma_s * x_prev).detach()
 
         # k (number of iterations for subroutine)
         l_s_k = 4.0 * (m_prev + sigma_s)
@@ -143,7 +143,7 @@ def main():
 
         # Run subroutine for k iterations, loading in data, computing gradient w/ regularization and stepping
         train_loss = 0.0
-        for _ in range(0, k):
+        for i in range(0, k):
             model.train()
 
             inputs, labels = next(iter(train_loader))
@@ -158,10 +158,14 @@ def main():
             loss = criterion(outputs, labels)
 
             # Add regularization
-            param_list_k = [param.clone().detach() for param in model.parameters()]
-            x_s = param_list_k[0]
+            if i == 0:
+                x_s = x_prev
+            else:
+                x_s = next(iter(model.parameters()))
+            x_bar_s = x_bar_s.to(device)
             reg_s = (sigma_s / 2.0) * (torch.norm(x_s - x_bar_s) ** 2)
             loss += reg_s
+
 
             # Backward pass
             loss.backward()
@@ -178,11 +182,72 @@ def main():
         print(f"Accuracy: {accuracy:.4f}\n")
 
         # Set resultant parameters for backtracking function
-        param_list_s = [param.clone().detach() for param in model.parameters()]
-        x_s = param_list[0]
+        x_s = next(iter(model.parameters()))
 
-        # Placeholder for backtracking
-        m_s = m_prev - 0.01
+        # Backtracking algorithm (will put into its own function after)
+        # inputs: loss function/model, x_s, loss @ x_s, gradient vector @ x_s, sigma_s, m_prev
+        # output: new M value, m_s
+
+        # inputs
+        max_iter=100
+        sigma = sigma_s
+
+        # compute gradient at x_s (x in backtracking algo)
+        inputs, labels = next(iter(train_loader))
+        inputs, labels = inputs.to(device), labels.to(device)
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        reg_s = (sigma_s / 2.0) * (torch.norm(x_s - x_bar_s) ** 2)
+        loss += reg_s
+        loss_x = loss.item()
+        loss.backward()
+        grad_x = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
+
+        # backtracking algorithm
+        m_j = m_prev
+
+        # Create a temporary model identical to the original model
+        temp_model = nn.Linear(input_dim, 1, bias=False).to(device)
+
+        for j in range(max_iter):
+            # compute x++
+            x_plus = x_s - 1 / (2 * (m_j + sigma)) * grad_x
+
+            # set parameters of temp_model to x_plus
+            with torch.no_grad():
+                temp_param = next(iter(temp_model.parameters()))
+                temp_param.copy_(x_plus)
+
+            # Compute loss at x_plus using temp_model
+            temp_model.eval()  # Set to evaluation mode
+            inputs, labels = next(iter(train_loader))
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = temp_model(inputs)
+            loss = criterion(outputs, labels)
+
+            # add regularization term at x_plus
+            reg_s = (sigma_s / 2.0) * torch.norm(x_plus - x_bar_s) ** 2
+
+            loss_x_plus = loss.item() + reg_s
+
+            # calculate lhs and rhs of termination
+            lhs = loss_x_plus - loss_x - torch.dot(grad_x, (x_plus - x_s).view(-1))
+            rhs = (m_j + sigma) / 2 * torch.norm(x_plus - x_s) ** 2
+            print(f"lhs={lhs}, rhs={rhs}")
+
+            if lhs <= rhs:
+                print(f"Backtracking converged in {j} iterations")
+                m_s = m_j  # Terminate with M = Mj
+                break
+                # return m_j
+            else:
+                m_j *= 2  # Update Mj
+        
+        # backtracking algorithm ran until max_iter
+        if j == (max_iter - 1):
+            m_s = m_j 
+        # raise RuntimeError(f"Backtracking did not converge within {max_iter} iterations")
 
         # Check for stopping condition, if not, set "prev" or s-1 parameters for next subproblem iteration
         if sigma_s >= m_s:
