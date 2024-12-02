@@ -84,6 +84,9 @@ def main():
     # Initialize model
     model = nn.Linear(input_dim, 1, bias=False).to(device)
 
+    # temporary model identical to the original model for later calculations
+    temp_model = nn.Linear(input_dim, 1, bias=False).to(device)
+
     # Define loss and optimizer
     criterion = Squared_Hinge_Loss()
     # criterion = Sigmoid_Loss()
@@ -205,10 +208,7 @@ def main():
         grad_x = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
 
         # backtracking algorithm
-        m_j = m_prev
-
-        # Create a temporary model identical to the original model
-        temp_model = nn.Linear(input_dim, 1, bias=False).to(device)
+        m_j = m_prev / 2.0
 
         for j in range(max_iter):
             # compute x++
