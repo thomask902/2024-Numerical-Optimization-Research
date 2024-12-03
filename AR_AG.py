@@ -29,29 +29,51 @@ class Sigmoid_Loss(nn.Module):
 # Evaluation function
 def evaluate(model, test_loader, criterion, device):
     model.eval()  # Set model to evaluation mode
-    total_loss = 0
-    correct = 0
 
+    # Get the entire test dataset
+    all_inputs = test_loader.dataset.tensors[0].to(device)
+    all_labels = test_loader.dataset.tensors[1].to(device)
+
+    # computing accuracy as the paper demanded
     with torch.no_grad():
-        for inputs, labels in test_loader:
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            total_loss += criterion(outputs, labels).item()
-            correct += (outputs * labels > 0).sum().item()
+        all_outputs = model(all_inputs)
+        prod = all_outputs * all_labels
+        num_correct = (prod > 0).sum().item()
+        acc = float(num_correct) / float(all_labels.shape[0])
+        loss = criterion(all_outputs, all_labels)
 
-    accuracy = correct / len(test_loader.dataset)
-    return total_loss / len(test_loader), accuracy
+    # compute gradient norm over the entire test dataset
+    model.train()
+    model.zero_grad()
+    all_outputs = model(all_inputs)
+    total_dataset_loss = criterion(all_outputs, all_labels)
+    test_loss = total_dataset_loss.item()
+    total_dataset_loss.backward()
+    test_grad_norm = get_grad_norm(model)
+    model.zero_grad()
 
+    return test_loss, test_grad_norm, acc
+
+def get_grad_norm(model):
+        grad_norm = 0
+        for p in model.parameters():
+            if p.grad is not None:
+                grad_norm += p.grad.norm(2).item() ** 2
+        grad_norm = grad_norm ** 0.5  # Take the square root of the sum of squares
+        return grad_norm
 
 def main():
-    # fixed hyperparameters
-    S = 5
-    learning_rate = 0.001
+    # Manually set hyperparameters
+    S = 100  # Maximum number of subproblems
     batch_size = 1000
     input_dim = 2000
     train_size = 1000
+    loss_type = "hinge"  # Choose between "hinge" and "sigmoid"
+    gpu = False  # Set to True to use GPU if available
+    log_base = './svm'
 
-    # lipschitz approximations
+    # Lipschitz approximations
+    data_name = f'n_{input_dim}_m_{train_size}'
     lipschitz_dict = {
         "n_2000_m_1000": {
             "no_batching": {"hinge": 2.066, "sigmoid": 0.310},
@@ -62,34 +84,49 @@ def main():
     }
 
     # Set up device
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if gpu and torch.cuda.is_available() else 'cpu')
 
-    # load in train dataset (fixed at n 2000 m 1000)
-    train_data = torch.load(f'generated_data/n_2000_m_1000.pt')
+    # Set up logging path
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    log_path = os.path.join(log_base, "generated", loss_type, data_name, "AR", "no-lr", str(S), str(batch_size), timestamp, "results.csv")
+    log_directory = os.path.dirname(log_path)
+    if not os.path.exists(log_directory):
+        os.makedirs(log_directory)
+
+    # Load in train dataset
+    train_data = torch.load(f'generated_data/{data_name}.pt')
     train_features = train_data['features']
     train_labels = train_data['labels'].unsqueeze(1).float()
     train_dataset = TensorDataset(train_features, train_labels)
 
-    # load in test dataset
-    test_data = torch.load(f'generated_data/n_2000_test.pt')
+    # Load in test dataset
+    test_data = torch.load(f'generated_data/n_{input_dim}_test.pt')
     test_features = test_data['features']
     test_labels = test_data['labels'].unsqueeze(1).float()
     test_dataset = TensorDataset(test_features, test_labels)
 
-    train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(
-        test_dataset, batch_size=batch_size, shuffle=False)
+    # Set batch_size for loaders
+    batch_test = len(test_dataset)
+    batch_train = len(train_dataset)
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_train, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_test, shuffle=False)
 
     # Initialize model
     model = nn.Linear(input_dim, 1, bias=False).to(device)
 
-    # temporary model identical to the original model for later calculations
+    # Temporary model identical to the original model for later calculations
     temp_model = nn.Linear(input_dim, 1, bias=False).to(device)
 
-    # Define loss and optimizer
-    criterion = Squared_Hinge_Loss()
-    # criterion = Sigmoid_Loss()
+    # Define loss
+    if loss_type == "hinge":
+        criterion = Squared_Hinge_Loss()
+        initial_lipschitz = lipschitz_dict[data_name]["no_batching"]["hinge"]
+    elif loss_type == "sigmoid":
+        criterion = Sigmoid_Loss()
+        initial_lipschitz = lipschitz_dict[data_name]["no_batching"]["sigmoid"]
+    else:
+        raise ValueError("Invalid loss function specified.")
 
     # ---------------------------------------------------------------------------------------
     # Subproblem Algorithm
@@ -101,17 +138,15 @@ def main():
         raise RuntimeError("Optimizer can only run on basic models")
     x_bar_prev = x_prev.clone().detach()
     sigma_prev = 0.0
-    m_prev = lipschitz_dict["n_2000_m_1000"]["no_batching"]["hinge"]
-    # m_prev = lipchitz_dict["n_2000_m_1000"]["no_batching"]["sigmoid"]
-    sigma_1 = m_prev / 10.0  # this is a guess, not sure
+    m_prev = initial_lipschitz
+    sigma_1 = m_prev / 10.0  # can tune a bit
 
     # Print initial parameters
-    print(f"Initial Parameters:")
-    print(f"x_0: {x_prev}")
-    print(f"x_bar_0: {x_bar_prev}")
-    print(f"sigma_0: {sigma_prev}")
-    print(f"m_0: {m_prev}")
-    print(f"sigma_1: {sigma_1}\n")
+    print(f"Initial Parameters: sigma_0={sigma_prev}, m_0={m_prev}, sigma_1={sigma_1}")
+
+    # Initialize variables for logging
+    iteration_stats = []
+    epoch_counter = 0  # To keep track of epochs across all subproblems
 
     # Training loop
     for s in range(1, S + 1):
@@ -134,56 +169,64 @@ def main():
         k = math.ceil(k_approx)
 
         # Print parameters for subproblem iteration
-        print(f"Subproblem Iteration s={s}:")
-        print(f"sigma_s: {sigma_s}")
-        print(f"gamma_s: {gamma_s}")
-        print(f"x_bar_s: {x_bar_s}")
-        print(f"m_(s-1): {m_prev}")
-        print(f"l_s_k: {l_s_k}")
-        print(f"k approx.: {k_approx}")
-        print(f"k: {k}\n")
+        print(f"Subproblem Iteration s={s}: sigma_s={sigma_s}, gamma_s={gamma_s}, m_(s-1)={m_prev}, l_s_k={l_s_k}, k approx.={k_approx}, k={k}")
 
         # because lipschitz approximation changes for each s, we redefine AG for each subproblem
-        optimizer = AG(params=model.parameters(), model=model, loss_type="hinge", lipschitz=m_prev + sigma_s)
+        optimizer = AG(params=model.parameters(), model=model, loss_type=loss_type, lipschitz=m_prev + sigma_s)
         # optimizer = AG(params=model.parameters(), model=model, loss_type="sigmoid", lipschitz=m_prev)
 
         # Run subroutine for k iterations, loading in data, computing gradient w/ regularization and stepping
         train_loss = 0.0
         for i in range(0, k):
-            model.train()
+            if (i + 1) % 50 == 0:
+                print (f"Iteration {i+1}/{k} for subproblem {s}")
+
+            epoch_counter += 1
+            start_time = time.time()
 
             inputs, labels = next(iter(train_loader))
             inputs, labels = inputs.to(device), labels.to(device)
 
-            # define a custom closure to run AG at this iteration with these inputs/labels and with regularization from x_bar_s and sigma_s
+            # Define a custom closure
             def closure():
                 optimizer.zero_grad()
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
 
-                # add regularization
+                # Add regularization
                 x_s = next(iter(model.parameters()))
                 reg_s = (sigma_s / 2.0) * torch.norm(x_s - x_bar_s) ** 2
                 loss += reg_s
 
-                # backprop
+                # Backprop
                 loss_value = loss.data.clone().detach()
                 loss.backward()
                 return outputs, loss_value
 
             # Perform optimization step with defined closure
-            outputs, loss_value, grad_norm, x_k_diff, x_ag_k_diff = optimizer.step(closure=closure)
-
+            outputs, loss_value, train_norm, x_k_diff, x_ag_k_diff = optimizer.step(closure=closure)
+            end_time = time.time()
+            train_time = end_time - start_time
             train_loss = loss_value.item()
 
-        
-        # Eval and output results after running each subproblem
-        test_loss, accuracy = evaluate(model, test_loader, criterion, device)
-        print(f"Subproblem Iteration s={s} Results:")
-        print(f"Train Loss: {train_loss:.8f}")
-        print(f"Train Gradient Norm: {grad_norm:.8f}")
-        print(f"Test Loss: {test_loss:.8f}")
-        print(f"Accuracy: {accuracy:.8f}\n")
+            # Evaluate on test data
+            test_loss, test_norm, accuracy = evaluate(model, test_loader, criterion, device)
+
+            # Log iteration stats
+            iteration_stats.append({
+                "Subproblem": s,
+                "Iteration": i + 1,
+                "Epoch": epoch_counter,
+                "Training Loss": train_loss,
+                "Training Gradient Norm": train_norm,
+                "Training Time (s)": train_time,
+                "Test Loss": test_loss,
+                "Test Gradient Norm": test_norm,
+                "Test Accuracy": accuracy,
+                "Test Error": 1 - accuracy,
+                "x_k Comparison": x_k_diff,
+                "x_ag_k Comparison": x_ag_k_diff
+            })
 
         # Set resultant parameters for backtracking function
         x_s = next(iter(model.parameters()))
@@ -205,7 +248,7 @@ def main():
         # compute gradient at x_s (x in backtracking algo)
         inputs, labels = next(iter(train_loader))
         inputs, labels = inputs.to(device), labels.to(device)
-        optimizer.zero_grad()
+        model.zero_grad()
         outputs = model(inputs)
         loss = criterion(outputs, labels)
         reg_s = (sigma_s / 2.0) * (torch.norm(x_s - x_bar_s) ** 2)
@@ -242,7 +285,7 @@ def main():
             # calculate lhs and rhs of termination
             lhs = loss_x_plus - loss_x - torch.dot(grad_x, (x_plus - x_s).view(-1))
             rhs = (m_j + sigma) / 2 * torch.norm(x_plus - x_s) ** 2
-            print(f"lhs={lhs}, rhs={rhs}")
+            #print(f"lhs={lhs}, rhs={rhs}")
 
             if lhs <= rhs:
                 print(f"Backtracking converged in {j} iterations")
@@ -272,11 +315,12 @@ def main():
             sigma_prev = sigma_s
             m_prev = m_s
 
-            print(f"Updated Parameters for Next Iteration:")
-            print(f"x_(s-1): {x_prev}")
-            print(f"x_bar_(s-1): {x_bar_prev}")
-            print(f"sigma_(s-1): {sigma_prev}")
-            print(f"m_(s-1): {m_prev}\n")
+            print(f"Updated Parameters for Next Iteration: sigma_(s-1)={sigma_prev}, m_(s-1)={m_prev}")
+    
+    # Save results to CSV
+    df_stats = pd.DataFrame(iteration_stats)
+    df_stats.to_csv(log_path, index=False)
+    print(df_stats)
 
 
 if __name__ == '__main__':
