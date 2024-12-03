@@ -91,6 +91,9 @@ def main():
     criterion = Squared_Hinge_Loss()
     # criterion = Sigmoid_Loss()
 
+    # ---------------------------------------------------------------------------------------
+    # Subproblem Algorithm
+
     # Set initial parameters for subproblems
     if len(list(model.parameters())) == 1:
         x_prev = next(iter(model.parameters()))
@@ -141,8 +144,8 @@ def main():
         print(f"k: {k}\n")
 
         # because lipschitz approximation changes for each s, we redefine AG for each subproblem
-        optimizer = AG(params=model.parameters(), model=model, loss_type="hinge", lipschitz=m_prev)
-        # optimizer = AG(params=model.parameters(), model=model, loss_type="sigmoid", lipschitz=lipschitz_dict["n_2000_m_1000"]["no_batching"]["sigmoid"])
+        optimizer = AG(params=model.parameters(), model=model, loss_type="hinge", lipschitz=m_prev + sigma_s)
+        # optimizer = AG(params=model.parameters(), model=model, loss_type="sigmoid", lipschitz=m_prev)
 
         # Run subroutine for k iterations, loading in data, computing gradient w/ regularization and stepping
         train_loss = 0.0
@@ -177,14 +180,20 @@ def main():
         # Eval and output results after running each subproblem
         test_loss, accuracy = evaluate(model, test_loader, criterion, device)
         print(f"Subproblem Iteration s={s} Results:")
-        print(f"Train Loss: {train_loss:.4f}")
-        print(f"Train Gradient Norm: {grad_norm:.4f}")
-        print(f"Test Loss: {test_loss:.4f}")
-        print(f"Accuracy: {accuracy:.4f}\n")
+        print(f"Train Loss: {train_loss:.8f}")
+        print(f"Train Gradient Norm: {grad_norm:.8f}")
+        print(f"Test Loss: {test_loss:.8f}")
+        print(f"Accuracy: {accuracy:.8f}\n")
 
         # Set resultant parameters for backtracking function
         x_s = next(iter(model.parameters()))
 
+        # ---------------------------------------------------------------------------------------
+
+
+
+
+        # ---------------------------------------------------------------------------------------
         # Backtracking algorithm (will put into its own function after)
         # inputs: loss function/model, x_s, loss @ x_s, gradient vector @ x_s, sigma_s, m_prev
         # output: new M value, m_s
@@ -206,6 +215,7 @@ def main():
         grad_x = torch.cat([p.grad.contiguous().view(-1) for p in model.parameters()])
 
         # backtracking algorithm
+        
         m_j = m_prev / 2.0
 
         for j in range(max_iter):
@@ -225,9 +235,9 @@ def main():
             loss = criterion(outputs, labels)
 
             # add regularization term at x_plus
-            reg_s = (sigma_s / 2.0) * torch.norm(x_plus - x_bar_s) ** 2
+            reg_j = (sigma_s / 2.0) * torch.norm(x_plus - x_bar_s) ** 2
 
-            loss_x_plus = loss.item() + reg_s
+            loss_x_plus = loss.item() + reg_j
 
             # calculate lhs and rhs of termination
             lhs = loss_x_plus - loss_x - torch.dot(grad_x, (x_plus - x_s).view(-1))
@@ -246,6 +256,10 @@ def main():
         if j == (max_iter - 1):
             m_s = m_j 
             raise RuntimeError(f"Backtracking did not converge within {max_iter} iterations")
+        
+        # ---------------------------------------------------------------------------------------
+
+
 
         # Check for stopping condition, if not, set "prev" or s-1 parameters for next subproblem iteration
         if sigma_s >= m_s:
