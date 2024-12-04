@@ -65,9 +65,9 @@ def get_grad_norm(model):
 def main():
     # Manually set hyperparameters
     S = 100  # Maximum number of subproblems
-    batch_size = 1000
     input_dim = 2000
     train_size = 1000
+    sigma_1_ratio = 5.0
     loss_type = "hinge"  # Choose between "hinge" and "sigmoid"
     gpu = False  # Set to True to use GPU if available
     log_base = './svm'
@@ -85,13 +85,6 @@ def main():
 
     # Set up device
     device = torch.device('cuda' if gpu and torch.cuda.is_available() else 'cpu')
-
-    # Set up logging path
-    timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    log_path = os.path.join(log_base, "generated", loss_type, data_name, "AR", "no-lr", str(S), str(batch_size), timestamp, "results.csv")
-    log_directory = os.path.dirname(log_path)
-    if not os.path.exists(log_directory):
-        os.makedirs(log_directory)
 
     # Load in train dataset
     train_data = torch.load(f'generated_data/{data_name}.pt')
@@ -139,7 +132,7 @@ def main():
     x_bar_prev = x_prev.clone().detach()
     sigma_prev = 0.0
     m_prev = initial_lipschitz
-    sigma_1 = m_prev / 10.0  # can tune a bit
+    sigma_1 = m_prev / sigma_1_ratio  # can tune a bit
 
     # Print initial parameters
     print(f"Initial Parameters: sigma_0={sigma_prev}, m_0={m_prev}, sigma_1={sigma_1}")
@@ -317,6 +310,13 @@ def main():
 
             print(f"Updated Parameters for Next Iteration: sigma_(s-1)={sigma_prev}, m_(s-1)={m_prev}")
     
+    # Set up path to save
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    log_path = os.path.join(log_base, "generated", loss_type, data_name, "AR", "no-lr", f"sigma_ratio_{sigma_1_ratio}", str(epoch_counter), timestamp, "results.csv")
+    log_directory = os.path.dirname(log_path)
+    if not os.path.exists(log_directory):
+        os.makedirs(log_directory)
+
     # Save results to CSV
     df_stats = pd.DataFrame(iteration_stats)
     df_stats.to_csv(log_path, index=False)
