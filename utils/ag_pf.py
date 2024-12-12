@@ -37,9 +37,6 @@ class AG_pf(torch.optim.Optimizer):
     # uses closure as argument, calling it internally multiple times as needed, this is why closure is used
     def step(self, closure=None):
 
-        # TESTING
-        #print(f'Alpha k: {self.alpha_k}, Beta k: {self.beta_k}, Lambda k: {self.lambda_k}')
-
         if closure:
             get_grad = closure
         else:
@@ -152,6 +149,8 @@ class AG_pf(torch.optim.Optimizer):
         # If lambda_k line search algorithm ran until max iterations
         if tau_1 == (self.max_iter - 1): 
             raise RuntimeError(f"Lambda line search did not converge within {self.max_iter} iterations")
+        
+        # ---------------------------------------------------------------------------------------
 
 
 
@@ -160,11 +159,48 @@ class AG_pf(torch.optim.Optimizer):
 
         # beta k line search loop, tau_2 starts at 0 increasing by 1 each loop iteration
         for tau_2 in range(self.max_iter):
+            # finding beta_k
+            beta_k = self.beta_hat * self.gamma_2 ** tau_2
             
+            # set parameters to x_ag_prev and find loss and gradient
+            for group in self.param_groups:
+                for p in group['params']:
+                    state = self.state[p]
+                    x_ag_prev = state['x_ag_prev']
+
+                    # set parameter p to x_ag_prev for gradient computation
+                    with torch.no_grad():
+                        p.data.copy_(x_md_k)
+
+            # calculate loss and gradient at x_ag_prev
+            outputs, loss_ag_prev = get_grad()
+
+            # update x_ag_bar with this gradient
+            for group in self.param_groups:
+                for p in group['params']:
+                    state = self.state[p]
+                    x_ag_prev = state['x_ag_prev']
+                    grad = p.grad.data
+
+                    # update x_ag_bar
+                    with torch.no_grad():
+                        x_ag_bar = x_ag_prev - beta_k * grad
+                    state['x_ag_bar'] = x_ag_bar.clone()
+
+                    # set parameter p to x_ag_bar for gradient computation
+                    with torch.no_grad():
+                        p.data.copy_(x_ag_bar)
+            
+            # calculate loss and gradient at x_ag_bar
+            outputs, loss_ag_bar = get_grad()
+
+            # get vector form of x_ag_prev and x_ag_bar
+            vec_x_ag_prev = torch.cat([self.state[p]['x_ag_prev'].contiguous().view(-1) for p in self.model.parameters()])
+            vec_x_ag_bar = torch.cat([self.state[p]['x_ag_bar'].contiguous().view(-1) for p in self.model.parameters()])
 
             # calculate lhs and rhs of termination condition
-            lhs = 0
-            rhs = 0
+            lhs = loss_ag_bar
+            rhs = loss_ag_prev - self.gamma_3 / (2.0 ** beta_k) * torch.norm(vec_x_ag_bar - vec_x_ag_prev) ** 2 + 1.0 / self.k
 
             # print(f"lhs={lhs}, rhs={rhs}")
 
@@ -176,20 +212,31 @@ class AG_pf(torch.optim.Optimizer):
         if tau_2 == (self.max_iter - 1): 
             raise RuntimeError(f"Beta line search did not converge within {self.max_iter} iterations")
 
+        # ---------------------------------------------------------------------------------------
+
         
 
         # ---------------------------------------------------------------------------------------
         # x_ag Update
 
-        losses = [1,2,3]
-        loss_value = min(losses)
+        # find the minimum loss value, that parameter becomes new x_ag
+        losses = {
+            "x_ag_prev": loss_ag_prev,
+            "x_ag_bar": loss_ag_bar,
+            "x_ag_tilda": loss_ag_tilda
+        }
+        min_key = min(losses, key=losses.get)
+        loss_value = losses[min_key]
 
 
-        # dummy update for x_k to test algorithm
+        # set x_ag_k to lowest loss, and set model parameters to x_k
         for group in self.param_groups:
             for p in group['params']:
                 state = self.state[p]
                 x_k = state['x_k']
+                x_ag_k = state[min_key]
+
+                state["x_ag_k"] = x_ag_k
 
                 # set model paramters to x_k
                 with torch.no_grad():

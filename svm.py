@@ -15,7 +15,7 @@ from datetime import datetime
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Support Vector Machine Training')
 
-parser.add_argument('--optimizer', default='GD', choices=['GD', 'AG', 'AG_reg', 'AG_pf' 'GNOM_manual',
+parser.add_argument('--optimizer', default='GD', choices=['GD', 'AG', 'AG_reg', 'AG_pf', 'GNOM_manual',
                     'GNOM', 'mixed5', 'mixed10', 'mixed20', 'mixed50', 'mixed100'], help='Choose optimizer')
 parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
 parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate', dest='lr')
@@ -499,7 +499,7 @@ def train_epoch_ag_pf(model, optimizer, train_loader, device, criterion):
         # calls step() from optimizer to use info from closure to run steps
         predictions, loss = optimizer.step()
         
-        total_loss += loss.item()
+        total_loss += loss
 
     end_time = time.time()
     total_loss = total_loss/len(train_loader)
@@ -514,10 +514,11 @@ def train_epoch_ag_pf(model, optimizer, train_loader, device, criterion):
     optimizer.zero_grad()
     all_inputs = train_loader.dataset.tensors[0].to(device)
     all_labels = train_loader.dataset.tensors[1].to(device)
-    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, enable_reg=False)
+    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False)
     train_loss, train_grad_norm = optimizer.calc_grad_norm()
     optimizer.zero_grad()
 
+    # train loss is found after with a pass through dataset, total loss is returned from algo
     return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time), x_k_diff
 
 def evaluate(model, test_loader, criterion, device):
