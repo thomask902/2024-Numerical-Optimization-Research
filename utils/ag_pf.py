@@ -185,32 +185,15 @@ class AG_pf(torch.optim.Optimizer):
         loss_value = min(losses)
 
 
-        
-
-        # now need to update x_k and x^md_k
+        # dummy update for x_k to test algorithm
         for group in self.param_groups:
             for p in group['params']:
                 state = self.state[p]
-                x_k_minus1 = state['x_k']
-                x_ag_k_minus1 = state['x_ag_k']
-                x_md_k = state['x_md_k']
-                grad = p.grad.data
-
-                # update x_k and x_ag_k
-                with torch.no_grad():
-                    x_k = x_k_minus1 - self.lambda_k * grad
-                    x_ag_k = x_md_k - self.beta_k * grad
-
-                # update state
-                state['x_k'] = x_k.clone()
-                state['x_ag_k'] = x_ag_k.clone()
+                x_k = state['x_k']
 
                 # set model paramters to x_k
-                p.data.copy_(x_k)
-
-                
-
-
+                with torch.no_grad():
+                    p.data.copy_(x_k)
 
         # set k = k+1
         self.k += 1

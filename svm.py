@@ -6,6 +6,7 @@ import time
 import pandas as pd
 from utils.gnom import GNOM
 from utils.ag import AG
+from utils.ag_pf import AG_pf
 from utils.gnom_manual import GNOM_manual
 import argparse
 import os
@@ -14,7 +15,7 @@ from datetime import datetime
 # taking in arguments to determine how the model will be run
 parser = argparse.ArgumentParser(description='PyTorch Support Vector Machine Training')
 
-parser.add_argument('--optimizer', default='GD', choices=['GD', 'AG', 'AG_reg', 'GNOM_manual',
+parser.add_argument('--optimizer', default='GD', choices=['GD', 'AG', 'AG_reg', 'AG_pf' 'GNOM_manual',
                     'GNOM', 'mixed5', 'mixed10', 'mixed20', 'mixed50', 'mixed100'], help='Choose optimizer')
 parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
 parser.add_argument('--lr', default=0.01, type=float, help='initial learning rate', dest='lr')
@@ -214,6 +215,8 @@ def main():
             model.parameters(), lr=args.gnom_lr, weight_decay=args.wd)
         optimizer_gnom = GNOM(params=model.parameters(),
                               base_optimizer=base_optimizer_gnom, model=model)
+    elif args.optimizer == "AG_pf":
+        optimizer = AG_pf(params=model.parameters(), model=model)
     else:
         raise ValueError("Please enter a valid optimizer!")
 
@@ -327,6 +330,9 @@ def main():
                     model, optimizer, train_loader, device, criterion)
             elif args.optimizer == "AG" or args.optimizer == "AG_reg":
                 total_loss, train_loss, train_grad_norm, train_time, x_k_diff, x_ag_k_diff = train_epoch_closure_ag(
+                    model, optimizer, train_loader, device, criterion)
+            elif args.optimizer == "AG_pf":
+                total_loss, train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_ag_pf(
                     model, optimizer, train_loader, device, criterion)
             else:
                 total_loss, train_loss, train_grad_norm, train_time, x_k_diff = train_epoch_closure(
@@ -476,6 +482,43 @@ def train_epoch_base(model, optimizer, train_loader, device, criterion):
     optimizer.zero_grad()
 
     return train_loss, train_grad_norm, (end_time - start_time), x_k_diff
+
+def train_epoch_ag_pf(model, optimizer, train_loader, device, criterion):
+    start_time = time.time()
+    model.train()  # Set model to training mode
+
+    total_loss = 0
+    for batch_idx, (inputs, labels) in enumerate(train_loader):
+        inputs, labels = inputs.to(device), labels.to(device)
+        
+        optimizer.zero_grad()
+
+        # calls set_closure from optimizer to set up optimizer with information
+        optimizer.set_closure(criterion, inputs, labels)
+
+        # calls step() from optimizer to use info from closure to run steps
+        predictions, loss = optimizer.step()
+        
+        total_loss += loss.item()
+
+    end_time = time.time()
+    total_loss = total_loss/len(train_loader)
+
+    # track difference between x_bar and x_k
+    for p in model.parameters():
+        x_bar = torch.load("generated_data/x_bar.pt")
+        x_k = p.data.clone().squeeze()
+        x_k_diff = torch.norm(x_bar - x_k).item()
+
+    # Compute gradient norm over the entire training dataset
+    optimizer.zero_grad()
+    all_inputs = train_loader.dataset.tensors[0].to(device)
+    all_labels = train_loader.dataset.tensors[1].to(device)
+    optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, enable_reg=False)
+    train_loss, train_grad_norm = optimizer.calc_grad_norm()
+    optimizer.zero_grad()
+
+    return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time), x_k_diff
 
 def evaluate(model, test_loader, criterion, device):
     model.eval()  # Set model to evaluation mode
