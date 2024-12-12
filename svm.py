@@ -497,7 +497,7 @@ def train_epoch_ag_pf(model, optimizer, train_loader, device, criterion):
         optimizer.set_closure(criterion, inputs, labels)
 
         # calls step() from optimizer to use info from closure to run steps
-        predictions, loss = optimizer.step()
+        predictions, loss, norm = optimizer.step()
         
         total_loss += loss
 
@@ -520,6 +520,7 @@ def train_epoch_ag_pf(model, optimizer, train_loader, device, criterion):
 
     # train loss is found after with a pass through dataset, total loss is returned from algo
     return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time), x_k_diff
+    
 
 def evaluate(model, test_loader, criterion, device):
     model.eval()  # Set model to evaluation mode

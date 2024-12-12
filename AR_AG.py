@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import time
 import pandas as pd
 from utils.ag import AG
+from utils.ag_pf import AG_pf
 import argparse
 import os
 from datetime import datetime
@@ -165,8 +166,9 @@ def main():
         print(f"Subproblem Iteration s={s}: sigma_s={sigma_s}, gamma_s={gamma_s}, m_(s-1)={m_prev}, l_s_k={l_s_k}, k approx.={k_approx}, k={k}")
 
         # because lipschitz approximation changes for each s, we redefine AG for each subproblem
-        optimizer = AG(params=model.parameters(), model=model, loss_type=loss_type, lipschitz=m_prev + sigma_s)
+        # optimizer = AG(params=model.parameters(), model=model, loss_type=loss_type, lipschitz=m_prev + sigma_s)
         # optimizer = AG(params=model.parameters(), model=model, loss_type="sigmoid", lipschitz=m_prev)
+        optimizer = AG_pf(params=model.parameters(), model=model)
 
         # Run subroutine for k iterations, loading in data, computing gradient w/ regularization and stepping
         train_loss = 0.0
@@ -197,10 +199,15 @@ def main():
                 return outputs, loss_value
 
             # Perform optimization step with defined closure
-            outputs, loss_value, train_norm, x_k_diff, x_ag_k_diff = optimizer.step(closure=closure)
+            outputs, loss_value = optimizer.step(closure=closure)
             end_time = time.time()
             train_time = end_time - start_time
-            train_loss = loss_value.item()
+            train_loss = loss_value
+
+            # calculate grad norm
+            inputs, labels = next(iter(train_loader))
+            optimizer.set_closure(criterion, inputs, labels)
+            train_norm = optimizer.calc_grad_norm()
 
             # Evaluate on test data
             test_loss, test_norm, accuracy = evaluate(model, test_loader, criterion, device)
@@ -211,14 +218,14 @@ def main():
                 "Iteration": i + 1,
                 "Epoch": epoch_counter,
                 "Training Loss": train_loss,
-                "Training Gradient Norm": train_norm,
+                "Training Gradient Norm": train_norm[1],
                 "Training Time (s)": train_time,
                 "Test Loss": test_loss,
                 "Test Gradient Norm": test_norm,
                 "Test Accuracy": accuracy,
                 "Test Error": 1 - accuracy,
-                "x_k Comparison": x_k_diff,
-                "x_ag_k Comparison": x_ag_k_diff
+                "x_k Comparison": 0.0,
+                "x_ag_k Comparison": 0.0
             })
 
         # Set resultant parameters for backtracking function

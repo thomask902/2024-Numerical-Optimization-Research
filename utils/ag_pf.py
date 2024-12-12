@@ -138,10 +138,10 @@ class AG_pf(torch.optim.Optimizer):
             lhs = loss_ag_tilda
             rhs = loss_md_k + alpha_k * torch.dot(grad_md_k, (vec_x_k - vec_x_k_prev)) + alpha_k / (2 * lambda_k) * torch.norm(vec_x_k - vec_x_k_prev) ** 2 + self.delta * alpha_k
 
-            print(f"lhs={lhs}, rhs={rhs}")
+            # print(f"lhs={lhs}, rhs={rhs}")
 
             if lhs <= rhs:
-                print(f"Lambda line search converged in {tau_1} iterations")
+                # print(f"Lambda line search converged in {tau_1} iterations")
 
                 # update previous upper case lambda, and append final lambda_k to list
                 self.upper_lambda_prev = upper_lambda_k
@@ -209,7 +209,7 @@ class AG_pf(torch.optim.Optimizer):
             # print(f"lhs={lhs}, rhs={rhs}")
 
             if lhs <= rhs:
-                print(f"Beta line search converged in {tau_2} iterations")
+                # print(f"Beta line search converged in {tau_2} iterations")
                 break
         
         # If beta_k line search algorithm ran until max iterations
