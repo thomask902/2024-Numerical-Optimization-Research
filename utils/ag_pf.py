@@ -93,6 +93,7 @@ class AG_pf(torch.optim.Optimizer):
 
             # calculate loss and gradient at x_md_k
             outputs, loss_md_k = get_grad()
+            loss_md_k = loss_md_k.item()
             grad_md_k = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
 
             # update x_k with this gradient
@@ -126,6 +127,7 @@ class AG_pf(torch.optim.Optimizer):
 
             # calculate loss and gradient at x_ag_tilda
             outputs, loss_ag_tilda = get_grad()
+            loss_ag_tilda = loss_ag_tilda.item()
             grad_ag_tilda = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
 
             # get vector form of x_k and x_k_prev
@@ -174,6 +176,7 @@ class AG_pf(torch.optim.Optimizer):
 
             # calculate loss and gradient at x_ag_prev
             outputs, loss_ag_prev = get_grad()
+            loss_ag_prev = loss_ag_prev.item()
 
             # update x_ag_bar with this gradient
             for group in self.param_groups:
@@ -193,6 +196,7 @@ class AG_pf(torch.optim.Optimizer):
             
             # calculate loss and gradient at x_ag_bar
             outputs, loss_ag_bar = get_grad()
+            loss_ag_bar = loss_ag_bar.item()
 
             # get vector form of x_ag_prev and x_ag_bar
             vec_x_ag_prev = torch.cat([self.state[p]['x_ag_prev'].contiguous().view(-1) for p in self.model.parameters()])
