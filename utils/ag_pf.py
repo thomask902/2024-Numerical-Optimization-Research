@@ -92,8 +92,8 @@ class AG_pf(torch.optim.Optimizer):
                         p.data.copy_(x_md_k)
 
             # calculate loss and gradient at x_md_k
-            outputs, loss_md_k = get_grad()
-            loss_md_k = loss_md_k.item()
+            outputs, loss_md_k_raw = get_grad()
+            loss_md_k = loss_md_k_raw.item()
             grad_md_k = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
 
             # update x_k with this gradient
@@ -126,9 +126,8 @@ class AG_pf(torch.optim.Optimizer):
                         p.data.copy_(x_ag_tilda)
 
             # calculate loss and gradient at x_ag_tilda
-            outputs, loss_ag_tilda = get_grad()
-            loss_ag_tilda = loss_ag_tilda.item()
-            grad_ag_tilda = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
+            outputs, loss_ag_tilda_raw = get_grad()
+            loss_ag_tilda = loss_ag_tilda_raw.item()
 
             # get vector form of x_k and x_k_prev
             vec_x_k = torch.cat([self.state[p]['x_k'].contiguous().view(-1) for p in self.model.parameters()])
@@ -175,8 +174,8 @@ class AG_pf(torch.optim.Optimizer):
                         p.data.copy_(x_md_k)
 
             # calculate loss and gradient at x_ag_prev
-            outputs, loss_ag_prev = get_grad()
-            loss_ag_prev = loss_ag_prev.item()
+            outputs, loss_ag_prev_raw = get_grad()
+            loss_ag_prev = loss_ag_prev_raw.item()
 
             # update x_ag_bar with this gradient
             for group in self.param_groups:
@@ -195,8 +194,8 @@ class AG_pf(torch.optim.Optimizer):
                         p.data.copy_(x_ag_bar)
             
             # calculate loss and gradient at x_ag_bar
-            outputs, loss_ag_bar = get_grad()
-            loss_ag_bar = loss_ag_bar.item()
+            outputs, loss_ag_bar_raw = get_grad()
+            loss_ag_bar = loss_ag_bar_raw.item()
 
             # get vector form of x_ag_prev and x_ag_bar
             vec_x_ag_prev = torch.cat([self.state[p]['x_ag_prev'].contiguous().view(-1) for p in self.model.parameters()])

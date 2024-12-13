@@ -68,7 +68,7 @@ def main():
     S = 100  # Maximum number of subproblems
     input_dim = 2000
     train_size = 1000
-    sigma_1_ratio = 5.0
+    sigma_1_ratio = 50.0
     loss_type = "hinge"  # Choose between "hinge" and "sigmoid"
     gpu = False  # Set to True to use GPU if available
     log_base = './svm'
@@ -167,7 +167,6 @@ def main():
 
         # because lipschitz approximation changes for each s, we redefine AG for each subproblem
         # optimizer = AG(params=model.parameters(), model=model, loss_type=loss_type, lipschitz=m_prev + sigma_s)
-        # optimizer = AG(params=model.parameters(), model=model, loss_type="sigmoid", lipschitz=m_prev)
         optimizer = AG_pf(params=model.parameters(), model=model)
 
         # Run subroutine for k iterations, loading in data, computing gradient w/ regularization and stepping
@@ -204,7 +203,7 @@ def main():
             train_time = end_time - start_time
             train_loss = loss_value
 
-            # calculate grad norm
+            # Calculate grad norm
             inputs, labels = next(iter(train_loader))
             optimizer.set_closure(criterion, inputs, labels)
             train_norm = optimizer.calc_grad_norm()
@@ -319,7 +318,7 @@ def main():
     
     # Set up path to save
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    log_path = os.path.join(log_base, "generated", loss_type, data_name, "AR", "no-lr", f"sigma_ratio_{sigma_1_ratio}", str(epoch_counter), timestamp, "results.csv")
+    log_path = os.path.join(log_base, "generated", loss_type, data_name, "AR-AG-pf", "no-lr", f"sigma_ratio_{sigma_1_ratio}", str(epoch_counter), timestamp, "results.csv")
     log_directory = os.path.dirname(log_path)
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
