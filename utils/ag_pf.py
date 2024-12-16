@@ -10,13 +10,14 @@ class AG_pf(torch.optim.Optimizer):
 
         # INITIALIZE GLOBAL PARAMETERS
         self.k = 1
-        self.gamma_1 = 0.5
-        self.gamma_2 = 0.5
+        self.gamma_1 = 0.4
+        self.gamma_2 = 0.4
         self.gamma_3 = 0.5
         self.beta_hat = 1.0
         self.lambda_hat = 1.0
+        self.sigma = 0.0001
         self.delta = 0.001
-        self.max_iter = 20
+        self.max_iter = 50
         self.upper_lambda_prev = 0.0
         self.lambda_k_list = []
 
@@ -128,6 +129,7 @@ class AG_pf(torch.optim.Optimizer):
             # calculate loss and gradient at x_ag_tilda
             outputs, loss_ag_tilda_raw = get_grad()
             loss_ag_tilda = loss_ag_tilda_raw.item()
+            grad_ag_tilda = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
 
             # get vector form of x_k and x_k_prev
             vec_x_k = torch.cat([self.state[p]['x_k'].contiguous().view(-1) for p in self.model.parameters()])
@@ -176,6 +178,7 @@ class AG_pf(torch.optim.Optimizer):
             # calculate loss and gradient at x_ag_prev
             outputs, loss_ag_prev_raw = get_grad()
             loss_ag_prev = loss_ag_prev_raw.item()
+            grad_ag_prev = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
 
             # update x_ag_bar with this gradient
             for group in self.param_groups:
@@ -196,6 +199,7 @@ class AG_pf(torch.optim.Optimizer):
             # calculate loss and gradient at x_ag_bar
             outputs, loss_ag_bar_raw = get_grad()
             loss_ag_bar = loss_ag_bar_raw.item()
+            grad_ag_bar = torch.cat([p.grad.contiguous().view(-1) for p in self.model.parameters()])
 
             # get vector form of x_ag_prev and x_ag_bar
             vec_x_ag_prev = torch.cat([self.state[p]['x_ag_prev'].contiguous().view(-1) for p in self.model.parameters()])
@@ -205,7 +209,8 @@ class AG_pf(torch.optim.Optimizer):
             lhs = loss_ag_bar
             rhs = loss_ag_prev - self.gamma_3 / (2.0 ** beta_k) * torch.norm(vec_x_ag_bar - vec_x_ag_prev) ** 2 + 1.0 / self.k
 
-            # print(f"lhs={lhs}, rhs={rhs}")
+            if tau_1 % 10 == 0:
+                print(f"lhs={lhs}, rhs={rhs}")
 
             if lhs <= rhs:
                 # print(f"Beta line search converged in {tau_2} iterations")
@@ -244,6 +249,43 @@ class AG_pf(torch.optim.Optimizer):
                 # set model paramters to x_k
                 with torch.no_grad():
                     p.data.copy_(x_k)
+        
+        # ---------------------------------------------------------------------------------------
+
+        
+
+        # ---------------------------------------------------------------------------------------
+        # beta_hat and lambda_hat updates
+        
+        # find lambda_hat for k = k+1
+        vec_x_md = torch.cat([self.state[p]['x_md_k'].contiguous().view(-1) for p in self.model.parameters()])
+        vec_x_ag_tilda = torch.cat([self.state[p]['x_ag_tilda'].contiguous().view(-1) for p in self.model.parameters()])
+
+        # these values are actually k-1 because it will be used in next iteration
+        s_md_prev = vec_x_md - vec_x_ag_tilda
+        y_md_prev = grad_md_k - grad_ag_tilda
+        approx_lambda_hat = torch.dot(s_md_prev, y_md_prev) / (torch.dot(y_md_prev, y_md_prev) + 1e-8)
+        self.lambda_hat = max(approx_lambda_hat, self.sigma)
+
+        # find beta_hat for k = k+1
+        # get gradient of x_ag_k
+        grads = {
+            "x_ag_prev": grad_ag_prev,
+            "x_ag_bar": grad_ag_bar,
+            "x_ag_tilda": grad_ag_tilda
+        }
+        grad_ag_k = grads[min_key]
+        vec_ag_k = torch.cat([self.state[p]['x_ag_k'].contiguous().view(-1) for p in self.model.parameters()])
+
+        # this is actually k-1 and k-2 because this will be used in next iteration
+        s_ag_prev = vec_ag_k - vec_x_ag_prev
+        y_ag_prev = grad_ag_k - grad_ag_prev
+        approx_beta_hat = torch.dot(s_ag_prev, y_ag_prev) / (torch.dot(y_ag_prev, y_ag_prev) + 1e-8)
+        self.beta_hat = max(approx_beta_hat, self.sigma)
+
+        print(f"For k={self.k+1}: lambda_hat = {self.lambda_hat}, beta_hat = {self.beta_hat}")
+
+        # ---------------------------------------------------------------------------------------
 
         # set k = k+1
         self.k += 1

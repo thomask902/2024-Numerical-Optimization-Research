@@ -68,10 +68,11 @@ def main():
     S = 100  # Maximum number of subproblems
     input_dim = 2000
     train_size = 1000
-    sigma_1_ratio = 50.0
+    sigma_1_ratio = 5.0
     loss_type = "hinge"  # Choose between "hinge" and "sigmoid"
     gpu = False  # Set to True to use GPU if available
     log_base = './svm'
+    optimizer_type = "AG"  # Set to "AG" or "AG_pf"
 
     # Lipschitz approximations
     data_name = f'n_{input_dim}_m_{train_size}'
@@ -166,8 +167,10 @@ def main():
         print(f"Subproblem Iteration s={s}: sigma_s={sigma_s}, gamma_s={gamma_s}, m_(s-1)={m_prev}, l_s_k={l_s_k}, k approx.={k_approx}, k={k}")
 
         # because lipschitz approximation changes for each s, we redefine AG for each subproblem
-        # optimizer = AG(params=model.parameters(), model=model, loss_type=loss_type, lipschitz=m_prev + sigma_s)
-        optimizer = AG_pf(params=model.parameters(), model=model)
+        if optimizer_type == "AG":
+            optimizer = AG(params=model.parameters(), model=model, loss_type=loss_type, lipschitz=m_prev + sigma_s)
+        else:
+            optimizer = AG_pf(params=model.parameters(), model=model)
 
         # Run subroutine for k iterations, loading in data, computing gradient w/ regularization and stepping
         train_loss = 0.0
@@ -197,16 +200,23 @@ def main():
                 loss.backward()
                 return outputs, loss_value
 
-            # Perform optimization step with defined closure
-            outputs, loss_value = optimizer.step(closure=closure)
+            # Perform optimization step with defined closure, loss values are from ag and md points, not actual parameters
+            x_k_diff, x_ag_k_diff = 0.0, 0.0
+            if optimizer_type == "AG":
+                outputs, loss_value, x_k_diff, x_ag_k_diff = optimizer.step(closure=closure)
+            else:
+                outputs, loss_value = optimizer.step(closure=closure)
             end_time = time.time()
             train_time = end_time - start_time
-            train_loss = loss_value
 
-            # Calculate grad norm
-            inputs, labels = next(iter(train_loader))
-            optimizer.set_closure(criterion, inputs, labels)
-            train_norm = optimizer.calc_grad_norm()
+            
+            # Compute gradient norm over the entire training dataset
+            optimizer.zero_grad()
+            all_inputs = train_loader.dataset.tensors[0].to(device)
+            all_labels = train_loader.dataset.tensors[1].to(device)
+            optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, enable_reg=False)
+            train_loss, train_grad_norm = optimizer.calc_grad_norm()
+            optimizer.zero_grad()
 
             # Evaluate on test data
             test_loss, test_norm, accuracy = evaluate(model, test_loader, criterion, device)
@@ -216,15 +226,15 @@ def main():
                 "Subproblem": s,
                 "Iteration": i + 1,
                 "Epoch": epoch_counter,
-                "Training Loss": train_loss,
-                "Training Gradient Norm": train_norm[1],
+                "Training Loss": train_loss.item(),
+                "Training Gradient Norm": train_grad_norm,
                 "Training Time (s)": train_time,
                 "Test Loss": test_loss,
                 "Test Gradient Norm": test_norm,
                 "Test Accuracy": accuracy,
                 "Test Error": 1 - accuracy,
-                "x_k Comparison": 0.0,
-                "x_ag_k Comparison": 0.0
+                "x_k Comparison": x_k_diff,
+                "x_ag_k Comparison": x_ag_k_diff
             })
 
         # Set resultant parameters for backtracking function
@@ -318,7 +328,8 @@ def main():
     
     # Set up path to save
     timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    log_path = os.path.join(log_base, "generated", loss_type, data_name, "AR-AG-pf", "no-lr", f"sigma_ratio_{sigma_1_ratio}", str(epoch_counter), timestamp, "results.csv")
+    run_name = "AR" if optimizer_type == "AG" else "AR-AG-pf"
+    log_path = os.path.join(log_base, "generated", loss_type, data_name, run_name, "no-lr", f"sigma_ratio_{sigma_1_ratio}", str(epoch_counter), timestamp, "results.csv")
     log_directory = os.path.dirname(log_path)
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)

@@ -410,11 +410,11 @@ def train_epoch_closure_ag(model, optimizer, train_loader, device, criterion):
         
         optimizer.zero_grad()
 
-        # calls set_closure from optimizer to set up GNOM with information
+        # calls set_closure from optimizer to set up AG with information
         optimizer.set_closure(criterion, inputs, labels)
 
         # calls step() from GNOM to use info from closure to run steps
-        predictions, loss, grad_norm, x_k_diff, x_ag_k_diff = optimizer.step()
+        predictions, loss, x_k_diff, x_ag_k_diff = optimizer.step()
         
         total_loss += loss.item()
         #if (batch_idx + 1) % 100 == 0:
@@ -497,7 +497,7 @@ def train_epoch_ag_pf(model, optimizer, train_loader, device, criterion):
         optimizer.set_closure(criterion, inputs, labels)
 
         # calls step() from optimizer to use info from closure to run steps
-        predictions, loss, norm = optimizer.step()
+        predictions, loss = optimizer.step()
         
         total_loss += loss
 

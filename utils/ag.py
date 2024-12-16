@@ -114,8 +114,6 @@ class AG(torch.optim.Optimizer):
         # compute gradient at x^md_k (get_grad)
         outputs, loss_value = get_grad()
 
-        grad_norm = self.grad_norm()
-
         # now need to update x_k and x^md_k
         for group in self.param_groups:
             for p in group['params']:
@@ -151,12 +149,10 @@ class AG(torch.optim.Optimizer):
                 #x_k_diff = torch.dot(x_bar, x_k2).item()
                 #x_ag_k_diff = torch.dot(x_bar, x_ag_k2).item()
 
-
-
         # set "k = k+1" by updating parameters (last step)
         self.update_k()
 
-        return outputs, loss_value, grad_norm, x_k_diff, x_ag_k_diff
+        return outputs, loss_value, x_k_diff, x_ag_k_diff
     
     def grad_norm(self):
         grad_norm = 0
