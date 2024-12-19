@@ -113,6 +113,7 @@ class AG(torch.optim.Optimizer):
 
         # compute gradient at x^md_k (get_grad)
         outputs, loss_value = get_grad()
+        x_md_norm = self.grad_norm()
 
         # now need to update x_k and x^md_k
         for group in self.param_groups:
@@ -132,27 +133,31 @@ class AG(torch.optim.Optimizer):
                 state['x_k'] = x_k.clone()
                 state['x_ag_k'] = x_ag_k.clone()
 
-                # set model paramters to x_k
-                p.data.copy_(x_k)
+                # set model parameters to x_ag_k
+                with torch.no_grad():
+                    p.data.copy_(x_ag_k)
 
-                # BELOW ONLY FOR SVM W NO BIAS
-                # track difference between x_bar and x_k and x_ag_k
-                x_bar = torch.load("generated_data/x_bar.pt")
+                # set model parameters to x_k to find gradient norm
+                #with torch.no_grad():
+                #    p.data.copy_(x_k)
 
-                # squeeze x_k
-                x_k2 = x_k.clone().squeeze()
-                x_ag_k2 = x_ag_k.clone().squeeze()
+        # reporting gradient norm at x_k
+        #x_k_norm = self.calc_grad_norm()
 
-                # compare
-                x_k_diff = torch.norm(x_bar - x_k2).item()
-                x_ag_k_diff = torch.norm(x_bar - x_ag_k2).item()
-                #x_k_diff = torch.dot(x_bar, x_k2).item()
-                #x_ag_k_diff = torch.dot(x_bar, x_ag_k2).item()
+        # set parameters to x_ag_k (As they should be)
+        #for group in self.param_groups:
+        #    for p in group['params']:
+        #        state = self.state[p]
+        #        x_ag_k = state['x_ag_k'].clone()
+
+        #        # set model parameters to x_ag_k
+        #        with torch.no_grad():
+        #            p.data.copy_(x_ag_k)
 
         # set "k = k+1" by updating parameters (last step)
         self.update_k()
 
-        return outputs, loss_value, x_k_diff, x_ag_k_diff
+        return outputs, loss_value, x_md_norm, 0.0 #x_k_norm[1]
     
     def grad_norm(self):
         grad_norm = 0
@@ -166,6 +171,32 @@ class AG(torch.optim.Optimizer):
     def calc_grad_norm(self):
         outputs, loss_value = self.forward_backward_func()
         grad_norm = self.grad_norm()
+        return loss_value, grad_norm
+
+    def calc_x_md_grad_norm(self):
+        # set parameters to x_md_k
+        for group in self.param_groups:
+            for p in group['params']:
+                state = self.state[p]
+                x_md_k = state['x_md_k'].clone()
+
+                # set model parameters to x_ag_k
+                with torch.no_grad():
+                    p.data.copy_(x_md_k)
+
+        # take gradient at x_md_k
+        outputs, loss_value = self.forward_backward_func()
+        grad_norm = self.grad_norm()
+
+        # set back to x_ag_k
+        for group in self.param_groups:
+            for p in group['params']:
+                state = self.state[p]
+                x_ag_k = state['x_ag_k'].clone()
+
+                # set model parameters to x_ag_k
+                with torch.no_grad():
+                    p.data.copy_(x_ag_k)
         return loss_value, grad_norm
 
     def zero_grad(self):

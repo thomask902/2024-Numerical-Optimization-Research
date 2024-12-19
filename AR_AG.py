@@ -203,7 +203,7 @@ def main():
             # Perform optimization step with defined closure, loss values are from ag and md points, not actual parameters
             x_k_diff, x_ag_k_diff = 0.0, 0.0
             if optimizer_type == "AG":
-                outputs, loss_value, x_k_diff, x_ag_k_diff = optimizer.step(closure=closure)
+                outputs, loss_value, x_md_norm, x_k_norm = optimizer.step(closure=closure)
             else:
                 outputs, loss_value = optimizer.step(closure=closure)
             end_time = time.time()
@@ -216,6 +216,7 @@ def main():
             all_labels = train_loader.dataset.tensors[1].to(device)
             optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, enable_reg=False)
             train_loss, train_grad_norm = optimizer.calc_grad_norm()
+            x_md_k_loss, x_md_k_norm = optimizer.calc_x_md_grad_norm()
             optimizer.zero_grad()
 
             # Evaluate on test data
@@ -233,8 +234,8 @@ def main():
                 "Test Gradient Norm": test_norm,
                 "Test Accuracy": accuracy,
                 "Test Error": 1 - accuracy,
-                "x_k Comparison": x_k_diff,
-                "x_ag_k Comparison": x_ag_k_diff
+                "x_md gradient norm": x_md_k_norm,
+                "x_k gradient norm": x_k_norm
             })
 
         # Set resultant parameters for backtracking function
