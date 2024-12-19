@@ -10,8 +10,8 @@ class AG_pf(torch.optim.Optimizer):
 
         # INITIALIZE GLOBAL PARAMETERS
         self.k = 1
-        self.gamma_1 = 0.4
-        self.gamma_2 = 0.4
+        self.gamma_1 = 0.5
+        self.gamma_2 = 0.5
         self.gamma_3 = 0.5
         self.beta_hat = 1.0
         self.lambda_hat = 1.0
@@ -209,8 +209,8 @@ class AG_pf(torch.optim.Optimizer):
             lhs = loss_ag_bar
             rhs = loss_ag_prev - self.gamma_3 / (2.0 ** beta_k) * torch.norm(vec_x_ag_bar - vec_x_ag_prev) ** 2 + 1.0 / self.k
 
-            if tau_1 % 10 == 0:
-                print(f"lhs={lhs}, rhs={rhs}")
+            #if tau_1 % 10 == 0:
+                #print(f"lhs={lhs}, rhs={rhs}")
 
             if lhs <= rhs:
                 # print(f"Beta line search converged in {tau_2} iterations")
@@ -237,7 +237,7 @@ class AG_pf(torch.optim.Optimizer):
         loss_value = losses[min_key]
 
 
-        # set x_ag_k to lowest loss, and set model parameters to x_k
+        # set x_ag_k to lowest loss, and set model parameters to x_ag_k
         for group in self.param_groups:
             for p in group['params']:
                 state = self.state[p]
@@ -248,7 +248,7 @@ class AG_pf(torch.optim.Optimizer):
 
                 # set model paramters to x_k
                 with torch.no_grad():
-                    p.data.copy_(x_k)
+                    p.data.copy_(x_ag_k)
         
         # ---------------------------------------------------------------------------------------
 
@@ -283,7 +283,7 @@ class AG_pf(torch.optim.Optimizer):
         approx_beta_hat = torch.dot(s_ag_prev, y_ag_prev) / (torch.dot(y_ag_prev, y_ag_prev) + 1e-8)
         self.beta_hat = max(approx_beta_hat, self.sigma)
 
-        print(f"For k={self.k+1}: lambda_hat = {self.lambda_hat}, beta_hat = {self.beta_hat}")
+        #print(f"For k={self.k+1}: lambda_hat = {self.lambda_hat}, beta_hat = {self.beta_hat}")
 
         # ---------------------------------------------------------------------------------------
 
