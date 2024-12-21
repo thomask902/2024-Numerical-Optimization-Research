@@ -68,7 +68,7 @@ def main():
     S = 100  # Maximum number of subproblems
     input_dim = 2000
     train_size = 1000
-    sigma_1_ratio = 5.0
+    sigma_1_ratio = 50.0
     loss_type = "hinge"  # Choose between "hinge" and "sigmoid"
     gpu = False  # Set to True to use GPU if available
     log_base = './svm'
@@ -216,7 +216,7 @@ def main():
             all_labels = train_loader.dataset.tensors[1].to(device)
             optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, enable_reg=False)
             train_loss, train_grad_norm = optimizer.calc_grad_norm()
-            x_md_k_loss, x_md_k_norm = optimizer.calc_x_md_grad_norm()
+            # x_md_k_loss, x_md_k_norm = optimizer.calc_x_md_grad_norm()
             optimizer.zero_grad()
 
             # Evaluate on test data
@@ -234,8 +234,8 @@ def main():
                 "Test Gradient Norm": test_norm,
                 "Test Accuracy": accuracy,
                 "Test Error": 1 - accuracy,
-                "x_md gradient norm": x_md_k_norm,
-                "x_k gradient norm": x_k_norm
+                "x_md gradient norm": 0.0,
+                "x_k gradient norm": 0.0
             })
 
         # Set resultant parameters for backtracking function

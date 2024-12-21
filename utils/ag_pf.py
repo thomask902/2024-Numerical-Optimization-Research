@@ -23,7 +23,7 @@ class AG_pf(torch.optim.Optimizer):
 
 
     # closure re-evaluates the function and returns loss, used in algos with multiple evaluations of objective function
-    def set_closure(self, loss_fn, inputs, targets, create_graph=True, **kwargs):
+    def set_closure(self, loss_fn, inputs, targets, create_graph=True, enable_reg=False, **kwargs):
 
         def get_grad():
             self.zero_grad()
@@ -304,6 +304,32 @@ class AG_pf(torch.optim.Optimizer):
     def calc_grad_norm(self):
         outputs, loss_value = self.forward_backward_func()
         grad_norm = self.grad_norm()
+        return loss_value, grad_norm
+
+    def calc_x_md_grad_norm(self):
+        # set parameters to x_md_k
+        for group in self.param_groups:
+            for p in group['params']:
+                state = self.state[p]
+                x_md_k = state['x_md_k'].clone()
+
+                # set model parameters to x_ag_k
+                with torch.no_grad():
+                    p.data.copy_(x_md_k)
+
+        # take gradient at x_md_k
+        outputs, loss_value = self.forward_backward_func()
+        grad_norm = self.grad_norm()
+
+        # set back to x_ag_k
+        for group in self.param_groups:
+            for p in group['params']:
+                state = self.state[p]
+                x_ag_k = state['x_ag_k'].clone()
+
+                # set model parameters to x_ag_k
+                with torch.no_grad():
+                    p.data.copy_(x_ag_k)
         return loss_value, grad_norm
 
     def zero_grad(self):

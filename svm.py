@@ -428,10 +428,10 @@ def train_epoch_closure_ag(model, optimizer, train_loader, device, criterion):
     all_inputs = train_loader.dataset.tensors[0].to(device)
     all_labels = train_loader.dataset.tensors[1].to(device)
     optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False, enable_reg=False)
-    train_loss, train_grad_norm = optimizer.calc_grad_norm()
+    train_loss, train_grad_norm = optimizer.calc_x_md_grad_norm()
     optimizer.zero_grad()
 
-    return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time), x_k_diff, x_ag_k_diff
+    return total_loss, train_loss.item(), train_grad_norm, (end_time - start_time), 0.0, 0.0
 
 def train_epoch_base(model, optimizer, train_loader, device, criterion):
     start_time = time.time()
@@ -515,7 +515,7 @@ def train_epoch_ag_pf(model, optimizer, train_loader, device, criterion):
     all_inputs = train_loader.dataset.tensors[0].to(device)
     all_labels = train_loader.dataset.tensors[1].to(device)
     optimizer.set_closure(criterion, all_inputs, all_labels, create_graph=False)
-    train_loss, train_grad_norm = optimizer.calc_grad_norm()
+    train_loss, train_grad_norm = optimizer.calc_x_md_grad_norm()
     optimizer.zero_grad()
 
     # train loss is found after with a pass through dataset, total loss is returned from algo
